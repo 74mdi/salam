@@ -75,10 +75,10 @@ fn login(koko: &Koko) -> Element<'_, Message> {
             },
             &koko.server,
         )
-            .on_input(Message::ServerChanged)
-            .size(14)
-            .padding(if koko.compact_layout { 14 } else { 12 })
-            .style(glass::input),
+        .on_input(Message::ServerChanged)
+        .size(14)
+        .padding(if koko.compact_layout { 14 } else { 12 })
+        .style(glass::input),
         text("Username").size(11).style(muted_style),
         text_input("your handle", &koko.handle)
             .on_input(Message::HandleChanged)
@@ -456,7 +456,12 @@ fn chat_list(koko: &Koko) -> Element<'_, Message> {
         );
     }
     let filters = row![
-        filter_chip("All", ChatFilter::All, koko.chat_filter, koko.compact_layout),
+        filter_chip(
+            "All",
+            ChatFilter::All,
+            koko.chat_filter,
+            koko.compact_layout,
+        ),
         filter_chip(
             "Unread",
             ChatFilter::Unread,
@@ -777,11 +782,7 @@ fn settings_header<'a>(koko: &'a Koko, title: &'a str, subtitle: &'a str) -> Ele
         .align_y(iced::Alignment::Center)
         .into()
     };
-    let conversation = column![
-        heading,
-        iced::widget::Space::with_height(10),
-    ]
-    .into();
+    let conversation = column![heading, iced::widget::Space::with_height(10),].into();
     conversation
 }
 
@@ -1135,23 +1136,23 @@ fn settings_content<'a>(
                 .style(glass::card),
         );
     }
-    container(
-        scrollable(container(content).width(if koko.compact_layout {
+    container(scrollable(container(content).width(
+        if koko.compact_layout {
             Length::Fill
         } else {
             Length::Fixed(660.0)
-        })),
-    )
-        .padding(Padding {
-            top: if koko.compact_layout { 12.0 } else { 28.0 },
-            right: if koko.compact_layout { 8.0 } else { 28.0 },
-            bottom: 12.0,
-            left: if koko.compact_layout { 8.0 } else { 28.0 },
-        })
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .center_x(Length::Fill)
-        .into()
+        },
+    )))
+    .padding(Padding {
+        top: if koko.compact_layout { 12.0 } else { 28.0 },
+        right: if koko.compact_layout { 8.0 } else { 28.0 },
+        bottom: 12.0,
+        left: if koko.compact_layout { 8.0 } else { 28.0 },
+    })
+    .width(Length::Fill)
+    .height(Length::Fill)
+    .center_x(Length::Fill)
+    .into()
 }
 
 fn switch_row(

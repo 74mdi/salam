@@ -32,11 +32,9 @@ fn keyboard_shortcut(
     if status == iced::event::Status::Captured {
         return None;
     }
-    let (key, modifiers) = match event {
-        iced::Event::Keyboard(iced::keyboard::Event::KeyPressed { key, modifiers, .. }) => {
-            (key, modifiers)
-        }
-        _ => return None,
+    let iced::Event::Keyboard(iced::keyboard::Event::KeyPressed { key, modifiers, .. }) = event
+    else {
+        return None;
     };
     match key.as_ref() {
         iced::keyboard::Key::Named(iced::keyboard::key::Named::Escape) => {
@@ -551,9 +549,7 @@ impl Koko {
                 let password = self.password.clone();
                 let device = device_name();
                 Task::perform(
-                    async move {
-                        api::register_then_login(&base, &handle, &password, device).await
-                    },
+                    async move { api::register_then_login(&base, &handle, &password, device).await },
                     Message::Auth,
                 )
             }
