@@ -11,7 +11,7 @@
 
 [Unit]
 Description=Koko chat server (one binary, one SQLite file)
-Documentation=https://github.com/koko-chat/koko/blob/main/docs/SELFHOSTING.md
+Documentation=https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md
 After=network-online.target
 Wants=network-online.target
 

@@ -19,7 +19,7 @@ whole matrix runs; tag `v*` and you get a release.
 | server-stack | `cargo fmt --check`, `clippy -D warnings`, all 34 tests (incl. 8 end-to-end integration tests with real WS clients) |
 | client | iced client builds + clippy-clean on Linux (tiny-skia renderer — no GPU needed in CI) |
 | wasm | koko-web compiles for `wasm32-unknown-unknown` and `trunk build` produces the bundle |
-| android-check | koko-client cross-compiles for `aarch64-linux-android` (cargo check — no NDK required) |
+| android-check | koko-client cross-compiles for `aarch64-linux-android` with the Android NDK |
 | site | koko-site static-exports with `next build` |
 | audit | `cargo audit --deny warnings` + `cargo deny` (license policy in `deny.toml`) |
 | smoke | boots the real server binary, registers a user, logs in, hits `/api/me` and `/healthz` over HTTP |
@@ -27,8 +27,8 @@ whole matrix runs; tag `v*` and you get a release.
 ## Making a release
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.0.1
+git push origin v0.0.1
 ```
 
 `release.yml` builds and attaches:
@@ -38,7 +38,7 @@ git push origin v0.1.0
 - `koko-web.tar.gz` (static bundle)
 - `.sha256` checksums for everything, generated release notes
 
-The Docker image gets `v0.1.0`, `0.1`, and `sha-…` tags from the same
+The Docker image gets `v0.0.1`, `0.0`, and `sha-…` tags from the same
 push (`docker.yml`).
 
 ## One-click deploy

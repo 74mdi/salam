@@ -51,10 +51,10 @@ export default function Home() {
           <span className="word">koko</span>
         </div>
         <div className="nav-links">
-          <a href="https://github.com/koko-chat/koko/blob/main/docs/SELFHOSTING.md">Docs</a>
-          <a href="https://github.com/koko-chat/koko/blob/main/docs/SELFHOSTING.md">Self-hosting</a>
-          <a href="https://github.com/koko-chat/koko">GitHub</a>
-          <span className="version">v0.1.0</span>
+          <a href="https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md">Docs</a>
+          <a href="https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md">Self-hosting</a>
+          <a href="https://github.com/74mdi/salam">GitHub</a>
+          <span className="version">v0.0.1</span>
         </div>
       </nav>
 
@@ -67,11 +67,11 @@ export default function Home() {
         <div className="cta-row">
           <a
             className="cta primary"
-            href="https://github.com/koko-chat/koko/blob/main/docs/SELFHOSTING.md"
+            href="https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md"
           >
             Self-host in 60 seconds
           </a>
-          <a className="cta secondary" href="https://github.com/koko-chat/koko">
+          <a className="cta secondary" href="https://github.com/74mdi/salam">
             ★ Star on GitHub
           </a>
         </div>

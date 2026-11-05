@@ -60,7 +60,7 @@ every push to `main` and every tag).
 
 ```bash
 mkdir -p /opt/koko && cd /opt/koko
-wget https://raw.githubusercontent.com/koko-chat/koko/main/docker-compose.yml
+wget https://raw.githubusercontent.com/74mdi/salam/main/docker-compose.yml
 docker compose up -d
 
 curl http://127.0.0.1:8080/healthz
@@ -202,7 +202,7 @@ manual migration step. Roll back by restoring the backup.
 `GET /healthz` is public and cheap:
 
 ```json
-{"ok":true,"version":"0.1.0","uptime_secs":2,"connections":0,
+{"ok":true,"version":"0.0.1","uptime_secs":2,"connections":0,
  "max_connections":512,"users":2,"messages":0,"media_bytes":0,"rss_kib":10920}
 ```
 

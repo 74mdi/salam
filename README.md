@@ -1,15 +1,15 @@
 # koko
 
-[![ci](https://github.com/koko-chat/koko/actions/workflows/ci.yml/badge.svg)](https://github.com/koko-chat/koko/actions/workflows/ci.yml)
-[![release](https://github.com/koko-chat/koko/actions/workflows/release.yml/badge.svg)](https://github.com/koko-chat/koko/actions/workflows/release.yml)
-[![docker](https://github.com/koko-chat/koko/actions/workflows/docker.yml/badge.svg)](https://github.com/koko-chat/koko/actions/workflows/docker.yml)
+[![ci](https://github.com/74mdi/salam/actions/workflows/ci.yml/badge.svg)](https://github.com/74mdi/salam/actions/workflows/ci.yml)
+[![release](https://github.com/74mdi/salam/actions/workflows/release.yml/badge.svg)](https://github.com/74mdi/salam/actions/workflows/release.yml)
+[![docker](https://github.com/74mdi/salam/actions/workflows/docker.yml/badge.svg)](https://github.com/74mdi/salam/actions/workflows/docker.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-7C6CF0.svg)](LICENSE)
 
 A self-hosted chat app that is **100% native Rust** — no Electron, no app
 webviews, no slop. One server binary, one SQLite file, zero external
 services. Liquid-glass UI on a dark theme.
 
-**This drop (v0.1.0)** is the working vertical slice: the full wire
+**This drop (v0.0.1)** is the working vertical slice: the full wire
 protocol, a deployable server with auth + sync + groups + media, a native
 iced client, a Leptos/WASM web client, CI/CD for GitHub Actions, and the
 self-hosting runbook. See the honest [status matrix](#status) for what is
@@ -60,7 +60,7 @@ done and what is next.
 ## Quickstart (60 seconds)
 
 ```bash
-git clone https://github.com/koko-chat/koko && cd koko
+git clone https://github.com/74mdi/salam && cd salam
 
 # the server — one process, one file
 cargo run -p koko-server -- --localhost

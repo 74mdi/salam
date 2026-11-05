@@ -38,6 +38,6 @@ pub async fn root() -> actix_web::HttpResponse {
         "name": "koko-server",
         "version": koko_core::KOKO_VERSION,
         "websocket": "/ws",
-        "docs": "https://github.com/koko-chat/koko"
+        "docs": "https://github.com/74mdi/salam"
     }))
 }
