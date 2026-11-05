@@ -20,5 +20,6 @@ proxy that fronts your koko-server.
 The `deploy GitHub Pages` workflow builds and deploys this site on pushes to
 `main`, or when run manually from the Actions tab. It configures the Next.js
 static export for the repository's project-site path (for example,
-`/salam/`). In the repository settings, set **Pages → Build and deployment →
-Source** to **GitHub Actions**.
+`/salam/`) and attempts to enable GitHub Actions as the Pages source. If
+repository policy prevents automatic enablement, an administrator must set
+**Pages → Build and deployment → Source** to **GitHub Actions**.
