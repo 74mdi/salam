@@ -3214,7 +3214,7 @@ name = "koko-core"
 version = "0.1.0"
 dependencies = [
  "argon2",
- "base64 0.22.1",
+ "base64 0.23.1",
  "koko-protocol",
  "rand 0.8.8",
  "regex",
@@ -3253,7 +3253,7 @@ dependencies = [
  "actix-test",
  "actix-web",
  "actix-ws",
- "base64 0.22.1",
+ "base64 0.23.1",
  "bincode",
  "clap",
  "env_logger",
