@@ -45,7 +45,7 @@ fn login(koko: &Koko) -> Element<'_, Message> {
     let sign_in = button(
         container(text("Sign in").size(14))
             .center_x(Length::Fill)
-            .padding(13),
+            .padding(if koko.compact_layout { 15 } else { 13 }),
     )
     .on_press(Message::SignInPressed)
     .width(Length::Fill)
@@ -54,9 +54,10 @@ fn login(koko: &Koko) -> Element<'_, Message> {
     let create = button(
         container(text("Create account on your server").size(12))
             .center_x(Length::Fill)
-            .padding(6),
+            .padding(if koko.compact_layout { 12 } else { 6 }),
     )
     .on_press(Message::CreateAccountPressed)
+    .width(Length::Fill)
     .style(glass::ghost);
 
     let mut form = column![
@@ -66,22 +67,29 @@ fn login(koko: &Koko) -> Element<'_, Message> {
             .style(secondary_style),
         iced::widget::Space::with_height(12),
         text("Server address").size(11).style(muted_style),
-        text_input("http://127.0.0.1:8080", &koko.server)
+        text_input(
+            if koko.compact_layout {
+                "https://your-koko-server"
+            } else {
+                "http://127.0.0.1:8080"
+            },
+            &koko.server,
+        )
             .on_input(Message::ServerChanged)
             .size(14)
-            .padding(12)
+            .padding(if koko.compact_layout { 14 } else { 12 })
             .style(glass::input),
         text("Username").size(11).style(muted_style),
         text_input("your handle", &koko.handle)
             .on_input(Message::HandleChanged)
             .size(14)
-            .padding(12)
+            .padding(if koko.compact_layout { 14 } else { 12 })
             .style(glass::input),
         text("Password").size(11).style(muted_style),
         text_input("your password", &koko.password)
             .on_input(Message::PasswordChanged)
             .size(14)
-            .padding(12)
+            .padding(if koko.compact_layout { 14 } else { 12 })
             .style(glass::input)
             .secure(true),
         remember_account_row(koko.remember_account),
@@ -90,7 +98,11 @@ fn login(koko: &Koko) -> Element<'_, Message> {
         create,
     ]
     .spacing(8)
-    .width(360);
+    .width(if koko.compact_layout {
+        Length::Fill
+    } else {
+        Length::Fixed(360.0)
+    });
 
     if let Some(err) = &koko.error {
         form = form.push(
@@ -121,14 +133,28 @@ fn login(koko: &Koko) -> Element<'_, Message> {
     )
     .width(330)
     .padding(28);
-    let form_panel = container(form).width(420).padding(28).style(move |theme| {
-        glass::content_card_mode(
-            koko.reduce_transparency,
-            koko.high_contrast,
-            &koko.surface_tone,
-            theme,
-        )
-    });
+    let form_panel = container(form)
+        .width(if koko.compact_layout {
+            Length::Fill
+        } else {
+            Length::Fixed(420.0)
+        })
+        .padding(if koko.compact_layout { 18 } else { 28 })
+        .style(move |theme| {
+            glass::content_card_mode(
+                koko.reduce_transparency,
+                koko.high_contrast,
+                &koko.surface_tone,
+                theme,
+            )
+        });
+    if koko.compact_layout {
+        return container(scrollable(column![logo_row(), form_panel].spacing(18)))
+            .padding(12)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into();
+    }
     container(row![intro, form_panel].spacing(10))
         .padding(10)
         .width(790)
@@ -212,6 +238,20 @@ fn chats(koko: &Koko) -> Element<'_, Message> {
         Some(active) => conversation(koko, active),
         None => empty_state(),
     };
+    if koko.compact_layout {
+        let content: Element<'_, Message> = if koko.active.is_some() {
+            thread_panel(koko, thread)
+        } else {
+            column![mobile_header(koko), chat_list(koko)]
+                .spacing(8)
+                .into()
+        };
+        return container(content)
+            .padding(8)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into();
+    }
     row![
         rail(koko),
         profile_menu(koko),
@@ -222,6 +262,47 @@ fn chats(koko: &Koko) -> Element<'_, Message> {
     .padding(8)
     .width(Length::Fill)
     .height(Length::Fill)
+    .into()
+}
+
+fn mobile_header(koko: &Koko) -> Element<'_, Message> {
+    container(
+        row![
+            column![
+                logo_row(),
+                row![
+                    status_dot(koko.connected),
+                    text(if koko.connected {
+                        "Connected"
+                    } else {
+                        "Reconnecting"
+                    })
+                    .size(11)
+                    .style(secondary_style),
+                ]
+                .spacing(6)
+                .align_y(iced::Alignment::Center),
+            ]
+            .spacing(4),
+            iced::widget::Space::with_width(Length::Fill),
+            button(iconoir_icon(Icon::Settings, 20))
+                .on_press(Message::SettingsPressed)
+                .width(44)
+                .height(44)
+                .style(glass::icon_button),
+        ]
+        .align_y(iced::Alignment::Center),
+    )
+    .padding(12)
+    .width(Length::Fill)
+    .style(move |theme| {
+        glass::panel_mode(
+            koko.reduce_transparency,
+            koko.high_contrast,
+            &koko.surface_tone,
+            theme,
+        )
+    })
     .into()
 }
 
@@ -375,11 +456,30 @@ fn chat_list(koko: &Koko) -> Element<'_, Message> {
         );
     }
     let filters = row![
-        filter_chip("All", ChatFilter::All, koko.chat_filter),
-        filter_chip("Unread", ChatFilter::Unread, koko.chat_filter),
-        filter_chip("Groups", ChatFilter::Groups, koko.chat_filter),
+        filter_chip("All", ChatFilter::All, koko.chat_filter, koko.compact_layout),
+        filter_chip(
+            "Unread",
+            ChatFilter::Unread,
+            koko.chat_filter,
+            koko.compact_layout,
+        ),
+        filter_chip(
+            "Groups",
+            ChatFilter::Groups,
+            koko.chat_filter,
+            koko.compact_layout,
+        ),
     ]
     .spacing(5);
+    let panel_toggle: Element<'_, Message> = if koko.compact_layout {
+        iced::widget::Space::with_width(0).into()
+    } else {
+        button(text(if koko.list_panel_open { "‹" } else { "›" }).size(18))
+            .on_press(Message::ToggleListPanel)
+            .padding(7)
+            .style(glass::icon_button)
+            .into()
+    };
     let content = column![
         row![
             column![
@@ -390,17 +490,14 @@ fn chat_list(koko: &Koko) -> Element<'_, Message> {
             ]
             .spacing(2),
             iced::widget::Space::with_width(Length::Fill),
-            button(text(if koko.list_panel_open { "‹" } else { "›" }).size(18))
-                .on_press(Message::ToggleListPanel)
-                .padding(7)
-                .style(glass::icon_button),
+            panel_toggle,
         ]
         .align_y(iced::Alignment::Center),
         text_input("Search chats or messages", &koko.chat_search)
             .id(koko.search_id.clone())
             .on_input(Message::ChatSearchChanged)
             .size(13)
-            .padding(10)
+            .padding(if koko.compact_layout { 14 } else { 10 })
             .style(glass::input),
         filters,
         scrollable(rows).height(Length::Fill),
@@ -409,14 +506,18 @@ fn chat_list(koko: &Koko) -> Element<'_, Message> {
             .on_input(Message::PeerChanged)
             .on_submit(Message::OpenDmPressed)
             .size(13)
-            .padding(10)
+            .padding(if koko.compact_layout { 14 } else { 10 })
             .style(glass::input),
     ]
     .spacing(10)
     .padding(16);
-    let width = (320.0 * koko.list_panel_progress).max(1.0);
+    let width = if koko.compact_layout {
+        Length::Fill
+    } else {
+        Length::Fixed((320.0 * koko.list_panel_progress).max(1.0))
+    };
     container(content)
-        .width(Length::Fixed(width))
+        .width(width)
         .height(Length::Fill)
         .style(move |theme| {
             glass::panel_mode(
@@ -449,13 +550,14 @@ fn filter_chip(
     label: &'static str,
     value: ChatFilter,
     active: ChatFilter,
+    compact_layout: bool,
 ) -> Element<'static, Message> {
     button(text(label).size(11))
         .on_press(Message::ChatFilterSelected(value))
         .padding(Padding {
-            top: 6.0,
+            top: if compact_layout { 11.0 } else { 6.0 },
             right: 10.0,
-            bottom: 6.0,
+            bottom: if compact_layout { 11.0 } else { 6.0 },
             left: 10.0,
         })
         .style(move |theme, status| glass::chip(value == active, theme, status))
@@ -542,6 +644,42 @@ fn chat_title(chat: &crate::api::ChatRow, my_handle: Option<&str>) -> String {
 // --------------------------------------------------------------- settings
 
 fn settings(koko: &Koko) -> Element<'_, Message> {
+    let content = match koko.settings_section {
+        SettingsSection::Profile => settings_profile(koko),
+        SettingsSection::Appearance => settings_appearance(koko),
+        SettingsSection::Account => settings_account(koko),
+        SettingsSection::Ai => settings_ai(koko),
+    };
+    if koko.compact_layout {
+        return column![
+            container(
+                row![
+                    button(text("←").size(18))
+                        .on_press(Message::BackToChatsPressed)
+                        .width(44)
+                        .height(44)
+                        .style(glass::ghost),
+                    text("Settings").size(20),
+                ]
+                .spacing(10)
+                .align_y(iced::Alignment::Center),
+            )
+            .padding(8),
+            row![
+                settings_mobile_tab("Profile", SettingsSection::Profile, koko.settings_section),
+                settings_mobile_tab("Look", SettingsSection::Appearance, koko.settings_section),
+                settings_mobile_tab("Account", SettingsSection::Account, koko.settings_section),
+                settings_mobile_tab("AI", SettingsSection::Ai, koko.settings_section),
+            ]
+            .spacing(4),
+            content,
+        ]
+        .spacing(8)
+        .padding(8)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into();
+    }
     let nav = container(
         column![
             text("SETTINGS").size(11).style(muted_style),
@@ -572,18 +710,29 @@ fn settings(koko: &Koko) -> Element<'_, Message> {
         )
     });
 
-    let content = match koko.settings_section {
-        SettingsSection::Profile => settings_profile(koko),
-        SettingsSection::Appearance => settings_appearance(koko),
-        SettingsSection::Account => settings_account(koko),
-        SettingsSection::Ai => settings_ai(koko),
-    };
     row![rail(koko), profile_menu(koko), nav, content]
         .spacing(8)
         .padding(8)
         .width(Length::Fill)
         .height(Length::Fill)
         .align_y(iced::Alignment::Start)
+        .into()
+}
+
+fn settings_mobile_tab(
+    label: &'static str,
+    section: SettingsSection,
+    active: SettingsSection,
+) -> Element<'static, Message> {
+    button(text(label).size(12))
+        .on_press(Message::SettingsSectionSelected(section))
+        .padding(Padding {
+            top: 10.0,
+            right: 12.0,
+            bottom: 10.0,
+            left: 12.0,
+        })
+        .style(move |theme, status| glass::nav_item(section == active, theme, status))
         .into()
 }
 
@@ -606,7 +755,14 @@ fn settings_nav_item(
 }
 
 fn settings_header<'a>(koko: &'a Koko, title: &'a str, subtitle: &'a str) -> Element<'a, Message> {
-    let conversation = column![
+    let heading: Element<'a, Message> = if koko.compact_layout {
+        column![
+            text(title).size(type_size(koko, 24)),
+            text(subtitle).size(12).style(secondary_style),
+        ]
+        .spacing(2)
+        .into()
+    } else {
         row![
             button(text("←").size(18))
                 .on_press(Message::BackToChatsPressed)
@@ -618,7 +774,11 @@ fn settings_header<'a>(koko: &'a Koko, title: &'a str, subtitle: &'a str) -> Ele
             .spacing(2),
         ]
         .spacing(12)
-        .align_y(iced::Alignment::Center),
+        .align_y(iced::Alignment::Center)
+        .into()
+    };
+    let conversation = column![
+        heading,
         iced::widget::Space::with_height(10),
     ]
     .into();
@@ -975,12 +1135,18 @@ fn settings_content<'a>(
                 .style(glass::card),
         );
     }
-    container(scrollable(container(content).width(660)))
+    container(
+        scrollable(container(content).width(if koko.compact_layout {
+            Length::Fill
+        } else {
+            Length::Fixed(660.0)
+        })),
+    )
         .padding(Padding {
-            top: 28.0,
-            right: 28.0,
+            top: if koko.compact_layout { 12.0 } else { 28.0 },
+            right: if koko.compact_layout { 8.0 } else { 28.0 },
             bottom: 12.0,
-            left: 28.0,
+            left: if koko.compact_layout { 8.0 } else { 28.0 },
         })
         .width(Length::Fill)
         .height(Length::Fill)
@@ -1264,11 +1430,13 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
         .on_input(Message::DraftChanged)
         .on_submit(Message::SendPressed)
         .size(14)
-        .padding(13)
+        .padding(if koko.compact_layout { 14 } else { 13 })
         .style(glass::input);
 
     let attach = button(iconoir_icon(Icon::Plus, 18))
         .on_press(Message::AttachPressed)
+        .width(if koko.compact_layout { 44 } else { 40 })
+        .height(if koko.compact_layout { 44 } else { 40 })
         .style(glass::icon_button);
     let send = button(iconoir_icon_color(Icon::Send, 18, koko_ui::TEXT_PRIMARY))
         .on_press(Message::SendPressed)
@@ -1278,6 +1446,7 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
             bottom: 11.0,
             left: 16.0,
         })
+        .height(if koko.compact_layout { 44 } else { 40 })
         .style(glass::send_button);
 
     let mut composer_content = column![].spacing(8);
@@ -1320,7 +1489,35 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
         iced::widget::Space::with_height(0).into()
     };
 
-    let conversation = column![
+    let heading: Element<'a, Message> = if koko.compact_layout {
+        row![
+            button(text("←").size(18))
+                .on_press(Message::MobileBackPressed)
+                .width(44)
+                .height(44)
+                .style(glass::ghost),
+            avatar_view(koko, 32),
+            column![
+                text(header).size(type_size(koko, 20)),
+                row![
+                    status_dot(koko.connected),
+                    text(if koko.connected {
+                        "online"
+                    } else {
+                        "reconnecting"
+                    })
+                    .size(11)
+                    .style(secondary_style),
+                ]
+                .spacing(6)
+                .align_y(iced::Alignment::Center),
+            ]
+            .spacing(2),
+        ]
+        .spacing(10)
+        .align_y(iced::Alignment::Center)
+        .into()
+    } else {
         row![
             avatar_view(koko, 32),
             column![
@@ -1341,7 +1538,11 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
             .spacing(2),
         ]
         .spacing(10)
-        .align_y(iced::Alignment::Center),
+        .align_y(iced::Alignment::Center)
+        .into()
+    };
+    let conversation = column![
+        heading,
         details,
         container(scrollable(list)).height(Length::Fill).clip(true),
         iced::widget::Space::with_height(4),
@@ -1717,6 +1918,26 @@ mod tests {
     fn chat_list_can_be_built() {
         let koko = Koko {
             screen: Screen::Chats,
+            ..Koko::default()
+        };
+        drop(koko.view());
+    }
+
+    #[test]
+    fn compact_chat_list_can_be_built() {
+        let koko = Koko {
+            screen: Screen::Chats,
+            compact_layout: true,
+            ..Koko::default()
+        };
+        drop(koko.view());
+    }
+
+    #[test]
+    fn compact_settings_can_be_built() {
+        let koko = Koko {
+            screen: Screen::Settings,
+            compact_layout: true,
             ..Koko::default()
         };
         drop(koko.view());

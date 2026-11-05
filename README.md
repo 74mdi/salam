@@ -37,7 +37,7 @@ done and what is next.
 | Wire protocol (`koko-protocol`) | **done, tested** | bincode frames, envelopes, versioned magic, 7 roundtrip suites |
 | Server (`koko-server`) | **done, tested** | register/login, WS messaging, per-user seq sync, groups, media + LRU quota, rate limits, `--localhost` mode |
 | Persistence (`koko-db`) | **done, tested** | SQLite WAL, embedded migrations, single-file fanout transaction |
-| Native client (`koko-client`) | **works** | login, chat list, conversation, offline mirror, reconnecting WS; compiles clippy-clean |
+| Native client (`koko-client`) | **works** | login, chat list, conversation, offline mirror, reconnecting WS, width-adaptive mobile layout; Android cross-compile check (APK/AAB packaging remains TODO) |
 | Web client (`koko-web`) | **works** | Leptos → WASM, same protocol crate, glass CSS; `trunk build` |
 | Landing page (`koko-site`) | **done** | Next.js static export |
 | CI/CD (GitHub Actions) | **done** | fmt/clippy/tests, client, wasm, android check, site, audit, smoke, releases, Docker, deploy |

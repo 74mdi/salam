@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "koko — chat that feels like light",
+  title: "koko — private chat, on your server",
   description:
-    "Self-hosted chat that runs on one binary and one SQLite file. Your server, your data, your rules.",
+    "A native Linux chat client built with Rust. Run your own server, keep your data close, and chat without Electron.",
 };
 
 export default function RootLayout({

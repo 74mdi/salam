@@ -105,6 +105,12 @@ optimistic echoes flipped to delivered by the `Sent` ack. The WS connector
 is one subscription task that reconnects with backoff; while offline,
 outgoing sends queue in an unbounded channel and flush on reconnect.
 
+The same views switch to a touch-friendly, single-panel layout below 760
+logical pixels and by default on Android. Chat list, conversation, profile,
+appearance, account, and AI settings stay available in that layout. Android
+APK/AAB packaging is still a separate roadmap item; CI currently cross-checks
+the Rust client for `aarch64-linux-android`.
+
 Rendering: iced on `tiny-skia` by default (runs on any Linux, no GPU), the
 `wgpu` feature upgrades to the GPU renderer. `koko-ui` approximates the
 liquid-glass language with layered translucency, specular borders and deep

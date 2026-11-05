@@ -1,110 +1,156 @@
+const CHATS = [
+  { initials: "mi", name: "mira", preview: "sent you the deploy notes", time: "9:41", active: true },
+  { initials: "sh", name: "self-hosting crew", preview: "kai: db migration done", time: "9:12" },
+  { initials: "ka", name: "kai", preview: "Typing…", time: "8:58" },
+];
+
 const FEATURES = [
   {
-    title: "End-to-end ready",
-    body: "Sealed envelope protocol keeps message bodies opaque to the server.",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M12 2l7 4v6c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-4z" />
-        <path d="M9 12l2 2 4-4" />
-      </svg>
-    ),
+    number: "01",
+    title: "Native on Linux",
+    body: "A fast, focused desktop client built with Rust and iced. No Electron, no browser tab.",
   },
   {
-    title: "SQLite only",
-    body: "WAL mode, zero external services. Backup = copy one file.",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <ellipse cx="12" cy="5" rx="8" ry="3" />
-        <path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5" />
-        <path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6" />
-      </svg>
-    ),
+    number: "02",
+    title: "Your server. Your data.",
+    body: "Run one small server binary. Your conversations live in a SQLite file you control.",
   },
   {
-    title: "Tiny footprint",
-    body: "512 live sockets on a 1 vCPU / 2 GB box. Startup RSS under 40 MB.",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <rect x="7" y="7" width="10" height="10" rx="2" />
-        <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />
-      </svg>
-    ),
-  },
-  {
-    title: "Liquid glass",
-    body: "Native Rust UI with frosted panels and springy motion. No Electron.",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" />
-        <path d="M19 15l.9 2.6L22.5 18.5l-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9L19 15z" />
-      </svg>
-    ),
+    number: "03",
+    title: "Ready when you are",
+    body: "Reconnects, syncs, and keeps a local conversation mirror, so your chat feels at home.",
   },
 ];
 
+function Logo() {
+  return (
+    <a className="brand" href="#" aria-label="Koko home">
+      <span className="brand-mark" aria-hidden="true">K</span>
+      <span>koko</span>
+    </a>
+  );
+}
+
+function ClientPreview() {
+  return (
+    <figure className="preview-wrap" aria-label="Preview of the Koko Linux chat client">
+      <div className="client-window">
+        <aside className="client-sidebar">
+          <div className="client-brand">
+            <span className="brand-mark small" aria-hidden="true">K</span>
+            <strong>koko</strong>
+            <span className="search-icon" aria-hidden="true">⌕</span>
+          </div>
+          <div className="search-field"><span aria-hidden="true">⌕</span> Search conversations</div>
+          <div className="chat-list">
+            {CHATS.map((chat) => (
+              <div className={`chat-item${chat.active ? " selected" : ""}`} key={chat.name}>
+                <span className={`avatar avatar-${chat.initials}`}>{chat.initials}</span>
+                <span className="chat-copy">
+                  <span className="chat-meta"><strong>{chat.name}</strong><time>{chat.time}</time></span>
+                  <span className={chat.preview === "Typing…" ? "typing" : "chat-preview"}>
+                    {chat.preview}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="server-state"><span /> Connected to your server</div>
+        </aside>
+
+        <section className="client-conversation" aria-label="Conversation with mira">
+          <header className="conversation-head">
+            <span className="avatar avatar-mi">mi</span>
+            <span className="peer-name"><strong>mira</strong><small><span /> online</small></span>
+            <span className="window-actions" aria-hidden="true">···</span>
+          </header>
+          <div className="messages">
+            <span className="day-label">Today</span>
+            <p className="bubble received">hey! did the backup script finish?</p>
+            <p className="bubble received">also — do we expose /healthz behind the proxy?</p>
+            <p className="bubble sent">yep, sqlite .backup ran at 3am — koko.db is 41 MB</p>
+            <p className="bubble received last">perfect. that&apos;s the last box on the self-host checklist 🎉</p>
+          </div>
+          <div className="composer"><span>Message mira</span><span className="send-button" aria-hidden="true">↑</span></div>
+        </section>
+      </div>
+      <figcaption>One calm place to talk, running on your own server.</figcaption>
+    </figure>
+  );
+}
+
 export default function Home() {
   return (
-    <main>
-      <nav className="nav">
-        <div className="logo">
-          <span className="k">K</span>
-          <span className="word">koko</span>
-        </div>
+    <main className="page">
+      <nav className="nav shell" aria-label="Main navigation">
+        <Logo />
         <div className="nav-links">
           <a href="https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md">Docs</a>
-          <a href="https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md">Self-hosting</a>
-          <a href="https://github.com/74mdi/salam">GitHub</a>
-          <span className="version">v0.0.1</span>
+          <a href="https://github.com/74mdi/salam">Source</a>
+          <a className="nav-download" href="https://github.com/74mdi/salam/releases/latest">
+            Linux client <span aria-hidden="true">↗</span>
+          </a>
         </div>
       </nav>
 
-      <section className="hero">
-        <h1>Privacy that stays yours.</h1>
-        <p>
-          Self-hosted chat that runs on one binary and one SQLite file.
-          Your server, your data, your rules.
-        </p>
-        <div className="cta-row">
-          <a
-            className="cta primary"
-            href="https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md"
-          >
-            Self-host in 60 seconds
-          </a>
-          <a className="cta secondary" href="https://github.com/74mdi/salam">
-            ★ Star on GitHub
-          </a>
+      <section className="hero shell">
+        <div className="hero-copy">
+          <p className="eyebrow"><span /> PRIVATE CHAT, BUILT WITH RUST</p>
+          <h1>Your conversations.<br /><span>Your machine.</span></h1>
+          <p className="hero-description">
+            A native Linux chat client for people who want a little more ownership.
+            Run your own server. Keep your data close.
+          </p>
+          <div className="hero-actions">
+            <a className="button button-primary" href="https://github.com/74mdi/salam/releases/latest">
+              Get the Linux client <span aria-hidden="true">↗</span>
+            </a>
+            <a className="button button-quiet" href="https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md">
+              Set up your server
+            </a>
+          </div>
+          <div className="hero-notes">
+            <span>One server binary</span><i /><span>One SQLite file</span><i /><span>No Electron</span>
+          </div>
+        </div>
+        <ClientPreview />
+      </section>
+
+      <section className="features shell" aria-labelledby="features-title">
+        <div className="section-heading">
+          <p className="eyebrow">A SMALLER, CALMER STACK</p>
+          <h2 id="features-title">Chat, without the baggage.</h2>
+        </div>
+        <div className="feature-grid">
+          {FEATURES.map((feature) => (
+            <article className="feature" key={feature.number}>
+              <span className="feature-number">{feature.number}</span>
+              <h3>{feature.title}</h3>
+              <p>{feature.body}</p>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section className="features">
-        {FEATURES.map((f) => (
-          <div key={f.title} className="glass feature">
-            <div className="icon">{f.icon}</div>
-            <h3>{f.title}</h3>
-            <p>{f.body}</p>
-          </div>
-        ))}
-      </section>
-
-      <section className="code-card">
-        <div className="glass inner">
-          <div className="term-header">
-            <span className="dot" />
-            <span className="dot" />
-            <span className="dot" />
-            <span className="term-title">bash</span>
-          </div>
-          <pre>
-            <span className="prompt">$</span> curl -fsSL get.koko.chat | sh{"\n"}
-            <span className="prompt">$</span> koko-server --localhost{"\n"}
-            <span className="comment"># listening on 127.0.0.1:8080 · db: koko.db</span>
-          </pre>
+      <section className="quickstart shell" id="get-started" aria-labelledby="quickstart-title">
+        <div className="quickstart-copy">
+          <p className="eyebrow">UP AND RUNNING IN MINUTES</p>
+          <h2 id="quickstart-title">Your server.<br />Your rules.</h2>
+          <p>Start a local server, open the client, and create your account. Move to your own host whenever you’re ready.</p>
+          <a href="https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md">
+            Read the self-hosting guide <span aria-hidden="true">→</span>
+          </a>
+        </div>
+        <div className="terminal" aria-label="Quick start commands">
+          <div className="terminal-head"><span /><span /><span /><span>terminal</span></div>
+          <pre><code><span className="terminal-muted"># Clone koko</span>{"\n"}git clone https://github.com/74mdi/salam{"\n"}cd salam{"\n\n"}<span className="terminal-muted"># Start a local server</span>{"\n"}cargo run -p koko-server -- --localhost</code></pre>
         </div>
       </section>
 
-      <footer className="footer">
-        MIT licensed · built with Rust · koko 2026
+      <footer className="footer shell">
+        <Logo />
+        <span>Open source · Built with Rust · Made for your own server</span>
+        <a href="https://github.com/74mdi/salam">GitHub <span aria-hidden="true">↗</span></a>
       </footer>
     </main>
   );

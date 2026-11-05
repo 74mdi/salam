@@ -11,17 +11,32 @@ use crate::api::{self, AuthOk, ChatRow};
 use crate::store::MirrorMsg;
 use crate::ws::{self, WsEvent};
 
+const COMPACT_LAYOUT_BREAKPOINT: f32 = 760.0;
+
+fn device_name() -> &'static str {
+    if cfg!(target_os = "android") {
+        "koko-android"
+    } else {
+        "koko-desktop"
+    }
+}
+
 fn keyboard_shortcut(
     event: iced::Event,
     status: iced::event::Status,
     _window: iced::window::Id,
 ) -> Option<Message> {
+    if let iced::Event::Window(iced::window::Event::Resized(size)) = &event {
+        return Some(Message::WindowResized(size.width));
+    }
     if status == iced::event::Status::Captured {
         return None;
     }
-    let iced::Event::Keyboard(iced::keyboard::Event::KeyPressed { key, modifiers, .. }) = event
-    else {
-        return None;
+    let (key, modifiers) = match event {
+        iced::Event::Keyboard(iced::keyboard::Event::KeyPressed { key, modifiers, .. }) => {
+            (key, modifiers)
+        }
+        _ => return None,
     };
     match key.as_ref() {
         iced::keyboard::Key::Named(iced::keyboard::key::Named::Escape) => {
@@ -54,9 +69,11 @@ pub enum Message {
     FocusNext,
     FocusPrevious,
     // ---- chats
+    WindowResized(f32),
     Chats(Result<Vec<ChatRow>, String>),
     ChatsPressed,
     ToggleListPanel,
+    MobileBackPressed,
     SidebarTick,
     ChatSearchChanged(String),
     ChatFilterSelected(ChatFilter),
@@ -181,6 +198,8 @@ pub struct ActiveChat {
 pub struct Koko {
     /// Screen.
     pub screen: Screen,
+    /// Use the compact, single-panel layout on narrow windows and phones.
+    pub compact_layout: bool,
     /// Login form fields.
     pub server: String,
     /// Login handle.
@@ -290,8 +309,13 @@ impl Default for Koko {
     fn default() -> Self {
         let mirror_path = std::env::var("KOKO_MIRROR").unwrap_or_else(|_| "koko-mirror.db".into());
         let store = crate::store::Store::open(&mirror_path).ok();
+        let server_fallback = if cfg!(target_os = "android") {
+            ""
+        } else {
+            "http://127.0.0.1:8080"
+        };
         let default_server = api::normalize_base_url(
-            &std::env::var("KOKO_SERVER").unwrap_or_else(|_| "http://127.0.0.1:8080".into()),
+            &std::env::var("KOKO_SERVER").unwrap_or_else(|_| server_fallback.into()),
         );
         let remembered = store
             .as_ref()
@@ -335,6 +359,7 @@ impl Default for Koko {
             .unwrap_or_else(|| vec!["Thinking".into(), "Reasoning".into(), "Coding".into()]);
         Koko {
             screen: Screen::Login,
+            compact_layout: cfg!(target_os = "android"),
             server: if remembered {
                 store.as_ref().map_or(default_server.clone(), |s| {
                     s.text_preference("login_server", &default_server)
@@ -480,6 +505,12 @@ impl Koko {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
+            Message::WindowResized(width) => {
+                if width.is_finite() && width > 0.0 {
+                    self.compact_layout = width < COMPACT_LAYOUT_BREAKPOINT;
+                }
+                Task::none()
+            }
             // ---------------- login form ----------------
             Message::ServerChanged(s) => {
                 self.server = api::normalize_base_url(&s);
@@ -506,8 +537,9 @@ impl Koko {
                 let base = self.server.clone();
                 let handle = self.handle.clone();
                 let password = self.password.clone();
+                let device = device_name();
                 Task::perform(
-                    async move { api::login(&base, &handle, &password, "koko-desktop").await },
+                    async move { api::login(&base, &handle, &password, device).await },
                     Message::Auth,
                 )
             }
@@ -517,9 +549,10 @@ impl Koko {
                 let base = self.server.clone();
                 let handle = self.handle.clone();
                 let password = self.password.clone();
+                let device = device_name();
                 Task::perform(
                     async move {
-                        api::register_then_login(&base, &handle, &password, "koko-desktop").await
+                        api::register_then_login(&base, &handle, &password, device).await
                     },
                     Message::Auth,
                 )
@@ -592,6 +625,11 @@ impl Koko {
             }
             Message::BackToChatsPressed | Message::ChatsPressed => {
                 self.screen = Screen::Chats;
+                self.profile_menu_open = false;
+                Task::none()
+            }
+            Message::MobileBackPressed => {
+                self.active = None;
                 self.profile_menu_open = false;
                 Task::none()
             }
@@ -1485,4 +1523,25 @@ fn copyable_message_text(message: &MirrorMsg) -> String {
         }
     }
     String::from_utf8_lossy(&message.body).into_owned()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Koko, Message};
+
+    #[test]
+    fn resize_switches_between_compact_and_desktop_layouts() {
+        let mut app = Koko {
+            compact_layout: false,
+            ..Koko::default()
+        };
+        drop(app.update(Message::WindowResized(600.0)));
+        assert!(app.compact_layout);
+
+        drop(app.update(Message::WindowResized(f32::NAN)));
+        assert!(app.compact_layout);
+
+        drop(app.update(Message::WindowResized(900.0)));
+        assert!(!app.compact_layout);
+    }
 }
