@@ -1,0 +1,17 @@
+[package]
+name = "koko-protocol"
+description = "Koko wire protocol: typed IDs, message envelopes, WebSocket frames, binary codec"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+bincode = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+
+[lints]
+workspace = true

@@ -1,0 +1,27 @@
+# koko — self-hosted in one container.
+#
+#   docker compose up -d
+#   curl http://127.0.0.1:8080/healthz
+#
+# Everything lives in ./data (SQLite + media). Back it up, own your chat.
+
+services:
+  koko:
+    image: ghcr.io/koko-chat/koko:latest   # or: build: .
+    container_name: koko
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      KOKO_BIND: 0.0.0.0:8080
+      KOKO_DB: /data/koko.db
+      KOKO_MEDIA_DIR: /data/media
+      KOKO_MEDIA_QUOTA: "4294967296"       # 4 GiB per user
+      KOKO_MAX_FILE_SIZE: "26214400"       # 25 MiB per file
+      KOKO_MAX_CONNECTIONS: "512"
+      # Registration is CLOSED by default on a public bind.
+      # Create the first account with `docker exec -it koko koko-server
+      # --help` … or flip this to "true" temporarily:
+      KOKO_OPEN_REGISTRATION: "false"
+    volumes:
+      - ./data:/data

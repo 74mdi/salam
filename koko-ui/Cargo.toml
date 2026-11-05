@@ -1,0 +1,19 @@
+[package]
+name = "koko-ui"
+description = "Liquid-glass design system for native Koko clients (iced)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+default = []
+# GPU renderer (production). Without it everything renders on tiny-skia,
+# which works on any Linux box — no GPU, no LLVM drivers, no excuses.
+wgpu = ["iced/wgpu"]
+
+[dependencies]
+iced = { version = "0.13", default-features = false, features = ["tokio", "tiny-skia", "svg"] }
+
+[lints]
+workspace = true

@@ -1,0 +1,22 @@
+[package]
+name = "koko-core"
+description = "Shared domain logic: handles, password hashing, tokens, E2E cipher trait"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+koko-protocol = { workspace = true }
+regex = { workspace = true }
+argon2 = { workspace = true }
+rand = { workspace = true }
+sha2 = { workspace = true }
+base64 = { workspace = true }
+subtle = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+
+[lints]
+workspace = true

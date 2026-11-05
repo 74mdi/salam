@@ -1,0 +1,25 @@
+# cargo-deny configuration. Run: cargo deny check
+# Advisories (cargo audit parity) are enforced in CI; this file pins license policy.
+
+[advisories]
+version = 2
+yanked = "deny"
+
+[licenses]
+version = 2
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Zlib",
+    "MPL-2.0",
+    "AGPL-3.0",
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

@@ -1,0 +1,43 @@
+[package]
+name = "koko-server"
+description = "Koko server: one binary, one SQLite file, in-process WebSocket fanout"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "koko-server"
+path = "src/main.rs"
+
+[dependencies]
+koko-protocol = { workspace = true }
+koko-core = { workspace = true }
+koko-db = { workspace = true }
+actix-web = { workspace = true }
+actix-ws = { workspace = true }
+actix-files = { workspace = true }
+mime = { workspace = true }
+tokio = { workspace = true }
+futures-util = { workspace = true }
+sqlx = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+bincode = { workspace = true }
+clap = { workspace = true }
+env_logger = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+rand = { workspace = true }
+sha2 = { workspace = true }
+base64 = { workspace = true }
+
+[dev-dependencies]
+actix-test = "0.1"
+tokio-tungstenite = { workspace = true }
+reqwest = { workspace = true }
+tempfile = { workspace = true }
+futures-util = { workspace = true }
+
+[lints]
+workspace = true

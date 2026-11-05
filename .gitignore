@@ -1,0 +1,26 @@
+# Rust
+/target
+**/*.rs.bk
+
+# Koko runtime state — never commit databases or media
+*.db
+*.db-wal
+*.db-shm
+/data/
+/dist/
+/media/
+
+# Node (koko-site)
+node_modules/
+.next/
+out/
+
+# WASM (koko-web)
+koko-web/target/
+koko-web/dist/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+*.log

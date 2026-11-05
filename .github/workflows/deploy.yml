@@ -1,0 +1,44 @@
+name: deploy
+
+# One-click self-host deployment template.
+#
+# Prereqs (repo → Settings → Secrets and variables → Actions):
+#   DEPLOY_HOST   e.g. koko.example.com
+#   DEPLOY_USER   e.g. deploy
+#   DEPLOY_SSH_KEY  the private key (cat ~/.ssh/id_ed25519)
+#
+# The target box needs Docker + the deploy/docker-compose.yml from this
+# repo (copy deploy/ to /opt/koko once — see docs/SELFHOSTING.md).
+# Then run this workflow from the Actions tab whenever you want to ship.
+
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: "Image tag to deploy (default: latest)"
+        required: false
+        default: "latest"
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: ssh deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/koko
+            echo "KOKO_IMAGE=ghcr.io/${{ github.repository }}:${{ inputs.image || 'latest' }}" > .env
+            docker compose pull koko
+            docker compose up -d
+            sleep 2
+            curl -fsS http://127.0.0.1:8080/healthz && echo " — deployment healthy"

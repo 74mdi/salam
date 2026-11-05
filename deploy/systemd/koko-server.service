@@ -1,0 +1,46 @@
+# koko-server via systemd (bare-metal / VM deployment).
+#
+#   sudo cp deploy/systemd/koko-server.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now koko-server
+#
+# Unit file assumes:
+#   * binary at /usr/local/bin/koko-server
+#   * state under /var/lib/koko   (koko.db + media/)
+#   * dedicated `koko` system user
+
+[Unit]
+Description=Koko chat server (one binary, one SQLite file)
+Documentation=https://github.com/koko-chat/koko/blob/main/docs/SELFHOSTING.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=koko
+Group=koko
+StateDirectory=koko
+WorkingDirectory=/var/lib/koko
+ExecStart=/usr/local/bin/koko-server \
+    --bind 0.0.0.0:8080 \
+    --db /var/lib/koko/koko.db \
+    --media-dir /var/lib/koko/media \
+    --max-connections 512
+Restart=on-failure
+RestartSec=3
+
+# Hardening: the server needs no privileges at all.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/koko
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,42 @@
+[package]
+name = "koko-client"
+description = "Koko native client (iced): offline-first chat with a local SQLite mirror"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "koko"
+path = "src/main.rs"
+
+[features]
+# The software renderer is useful as an explicit fallback, but makes the
+# desktop UI noticeably sluggish while scrolling or typing.
+default = ["wgpu"]
+# GPU renderer for desktop/Android production builds.
+wgpu = ["iced/wgpu", "koko-ui/wgpu"]
+
+[dependencies]
+koko-protocol = { workspace = true }
+koko-core = { workspace = true }
+koko-ui = { workspace = true }
+iced = { version = "0.13", default-features = false, features = ["tokio", "tiny-skia", "image", "svg"] }
+tokio = { workspace = true }
+futures-util = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+bincode = { workspace = true }
+reqwest = { workspace = true }
+tokio-tungstenite = { workspace = true }
+rusqlite = { workspace = true }
+rand = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+rfd = "0.15"
+image = "0.24"
+
+[dev-dependencies]
+
+[lints]
+workspace = true

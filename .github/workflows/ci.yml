@@ -1,0 +1,144 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ---- the server stack: fmt + clippy + tests --------------------------
+  server-stack:
+    name: fmt + clippy + test (linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Clippy (server stack, -D warnings)
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Tests (protocol + core + db + server)
+        run: cargo test
+
+  # ---- the native client (iced) ----------------------------------------
+  client:
+    name: koko-client (linux, clippy + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Install iced system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-dev libwayland-dev pkg-config
+      - name: Clippy (client + ui, tiny-skia renderer, -D warnings)
+        run: cargo clippy -p koko-ui -p koko-client --all-targets -- -D warnings
+      - name: Debug build (tiny-skia renderer — works everywhere)
+        run: cargo build -p koko-client
+
+  # ---- the web client (Leptos → WASM) ----------------------------------
+  wasm:
+    name: koko-web (wasm32)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Check for wasm32
+        run: cargo check -p koko-web --target wasm32-unknown-unknown
+      - name: Install trunk
+        run: |
+          curl -sSL https://github.com/trunk-rs/trunk/releases/download/v0.21.7/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xz
+          sudo mv trunk /usr/local/bin/
+      - name: Trunk build (production bundle)
+        working-directory: koko-web
+        run: trunk build --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: koko-web-dist
+          path: koko-web/dist/
+
+  # ---- Android cross-compile check (no NDK needed for `check`) ---------
+  android-check:
+    name: koko-client (aarch64-linux-android, check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+      - uses: Swatinem/rust-cache@v2
+      - name: Cross-compile check
+        run: cargo check -p koko-client --target aarch64-linux-android
+
+  # ---- the landing page (Next.js static export) ------------------------
+  site:
+    name: koko-site (static export)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: koko-site/package.json
+      - name: Build
+        working-directory: koko-site
+        run: |
+          npm install
+          npx next build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: koko-site-out
+          path: koko-site/out/
+
+  # ---- supply chain -----------------------------------------------------
+  audit:
+    name: cargo audit + deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install --locked cargo-audit cargo-deny
+      - run: cargo audit --deny warnings
+      - run: cargo deny check
+
+  # ---- live smoke test: boot the real binary and use the API -----------
+  smoke:
+    name: koko-server live smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build server
+        run: cargo build -p koko-server
+      - name: Boot + exercise the API
+        run: |
+          set -e
+          ./target/debug/koko-server --localhost --bind 127.0.0.1:18080 \
+            --db "$RUNNER_TEMP/koko.db" --media-dir "$RUNNER_TEMP/media" &
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:18080/healthz && break || sleep 1
+          done
+          curl -fsS -X POST http://127.0.0.1:18080/api/register \
+            -H 'Content-Type: application/json' \
+            -d '{"handle":"smoke","password":"hunter2hunter2"}'
+          TOKEN=$(curl -fsS -X POST http://127.0.0.1:18080/api/login \
+            -H 'Content-Type: application/json' \
+            -d '{"handle":"smoke","password":"hunter2hunter2","device_name":"ci"}' \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["token"])')
+          curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:18080/api/me
+          echo "smoke test OK"
