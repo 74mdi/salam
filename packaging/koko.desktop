@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Koko
+Comment=Private, self-hosted chat
+Exec=koko
+Icon=koko
+Terminal=false
+Categories=Network;InstantMessaging;
+StartupNotify=true

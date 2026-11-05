@@ -95,6 +95,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libxkbcommon-dev libwayland-dev pkg-config
+      - name: Install package builders
+        run: |
+          cargo install --locked cargo-deb
+          cargo install --locked cargo-generate-rpm
       - name: Build
         run: cargo build --release -p koko-client --features wgpu
       - name: Package
@@ -104,12 +108,48 @@ jobs:
           cp README.md LICENSE dist/
           tar -czf koko-client-linux-amd64.tar.gz -C dist .
           sha256sum koko-client-linux-amd64.tar.gz > koko-client-linux-amd64.tar.gz.sha256
+      - name: Build Debian and RPM packages
+        working-directory: koko-client
+        run: |
+          cargo deb --no-build
+          cargo generate-rpm
+          cp ../target/debian/*.deb ../koko-client-linux-amd64.deb
+          rpm_package=$(find ../target/generate-rpm -maxdepth 1 -type f -name '*.rpm' -print -quit)
+          test -n "$rpm_package"
+          cp "$rpm_package" ../koko-client-linux-x86_64.rpm
+      - name: Build AppImage
+        run: |
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-appimage-x86_64.AppImage
+          mkdir -p AppDir/usr/bin
+          cp target/release/koko AppDir/usr/bin/koko
+          PATH="$PWD:$PATH" APPIMAGE_EXTRACT_AND_RUN=1 ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --executable AppDir/usr/bin/koko \
+            --desktop-file packaging/koko.desktop \
+            --icon-file packaging/koko.svg \
+            --output appimage
+          appimage=$(find . -maxdepth 1 -type f -name '*.AppImage' ! -name 'linuxdeploy*' -print -quit)
+          test -n "$appimage"
+          mv "$appimage" koko-client-linux-x86_64.AppImage
+      - name: Create package checksums
+        run: |
+          sha256sum koko-client-linux-amd64.deb > koko-client-linux-amd64.deb.sha256
+          sha256sum koko-client-linux-x86_64.rpm > koko-client-linux-x86_64.rpm.sha256
+          sha256sum koko-client-linux-x86_64.AppImage > koko-client-linux-x86_64.AppImage.sha256
       - uses: actions/upload-artifact@v4
         with:
           name: koko-client-linux-amd64
           path: |
             koko-client-linux-amd64.tar.gz
             koko-client-linux-amd64.tar.gz.sha256
+            koko-client-linux-amd64.deb
+            koko-client-linux-amd64.deb.sha256
+            koko-client-linux-x86_64.rpm
+            koko-client-linux-x86_64.rpm.sha256
+            koko-client-linux-x86_64.AppImage
+            koko-client-linux-x86_64.AppImage.sha256
 
   client-windows:
     name: koko-client (windows x86_64, release + wgpu)
@@ -212,4 +252,7 @@ jobs:
           files: |
             artifacts/*.tar.gz
             artifacts/*.zip
+            artifacts/*.deb
+            artifacts/*.rpm
+            artifacts/*.AppImage
             artifacts/*.sha256

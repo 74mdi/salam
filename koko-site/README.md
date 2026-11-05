@@ -14,3 +14,11 @@ npm run build        # → ./out (pure static files)
 
 Deploy `out/` anywhere static: GitHub Pages, any CDN, or the same reverse
 proxy that fronts your koko-server.
+
+## GitHub Pages
+
+The `deploy GitHub Pages` workflow builds and deploys this site on pushes to
+`main`, or when run manually from the Actions tab. It configures the Next.js
+static export for the repository's project-site path (for example,
+`/salam/`). In the repository settings, set **Pages → Build and deployment →
+Source** to **GitHub Actions**.

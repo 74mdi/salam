@@ -40,3 +40,27 @@ image = "0.24"
 
 [lints]
 workspace = true
+
+[package.metadata.deb]
+maintainer = "Koko contributors"
+copyright = "2026, Koko contributors"
+license-file = ["../LICENSE", "0"]
+depends = "$auto"
+section = "net"
+priority = "optional"
+assets = [
+	["target/release/koko", "usr/bin/", "755"],
+	["../packaging/koko.desktop", "usr/share/applications/", "644"],
+	["../packaging/koko.svg", "usr/share/icons/hicolor/scalable/apps/", "644"],
+	["../README.md", "usr/share/doc/koko-client/README.md", "644"],
+]
+
+[package.metadata.generate-rpm]
+summary = "Koko desktop chat client"
+assets = [
+	{ source = "../target/release/koko", dest = "/usr/bin/koko", mode = "755" },
+	{ source = "../packaging/koko.desktop", dest = "/usr/share/applications/koko.desktop", mode = "644" },
+	{ source = "../packaging/koko.svg", dest = "/usr/share/icons/hicolor/scalable/apps/koko.svg", mode = "644" },
+	{ source = "../README.md", dest = "/usr/share/doc/koko-client/README.md", mode = "644", doc = true },
+	{ source = "../LICENSE", dest = "/usr/share/licenses/koko-client/LICENSE", mode = "644", doc = true },
+]
