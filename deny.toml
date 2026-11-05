@@ -3,6 +3,10 @@
 
 [advisories]
 version = 2
+ignore = [
+    { id = "RUSTSEC-2026-0258", reason = "HTTP/2 is disabled in this server; its plain HTTP upstream is behind the TLS-terminating reverse proxy." },
+    { id = "RUSTSEC-2023-0071", reason = "RSA is pulled in by SQLx's optional MySQL backend, which is not enabled; this application uses SQLite only." },
+]
 yanked = "deny"
 
 [licenses]

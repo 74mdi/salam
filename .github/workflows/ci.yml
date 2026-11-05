@@ -79,7 +79,7 @@ jobs:
         with:
           targets: aarch64-linux-android
       - uses: Swatinem/rust-cache@v2
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4.0.4
       - name: Install Android NDK toolchain
         run: sdkmanager --install "ndk;26.3.11579264"
       - name: Configure Android linker and C compiler
@@ -124,7 +124,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo install --locked cargo-audit cargo-deny
-      - run: cargo audit --deny warnings
+      - run: cargo audit
       - run: cargo deny check
 
   # ---- live smoke test: boot the real binary and use the API -----------

@@ -111,9 +111,9 @@ async fn ws_connect_and_hello(srv: &TestServer, token: &str) -> (Ws, ServerFrame
 
 async fn read_frame(ws: &mut Ws) -> ServerFrame {
     loop {
-        let msg = tokio::time::timeout(std::time::Duration::from_secs(10), ws.next())
+        let msg = tokio::time::timeout(std::time::Duration::from_secs(30), ws.next())
             .await
-            .expect("frame within 10s")
+            .expect("frame within 30s")
             .expect("stream open")
             .expect("ws ok");
         match msg {

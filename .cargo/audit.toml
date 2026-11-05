@@ -1,0 +1,8 @@
+[advisories]
+# `cargo audit` examines Cargo.lock, including optional packages not compiled by this app.
+ignore = [
+    # Actix's optional h2 dependency is lockfile-only; HTTP/2 is disabled in Cargo.toml.
+    "RUSTSEC-2026-0258",
+    # SQLx's optional MySQL backend is lockfile-only; the application enables SQLite only.
+    "RUSTSEC-2023-0071",
+]
