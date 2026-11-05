@@ -26,9 +26,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure GitHub Pages
+        id: pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
+        continue-on-error: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -52,6 +54,13 @@ jobs:
         with:
           path: koko-site/out
 
+      - name: Explain skipped deployment
+        if: steps.pages.outcome == 'failure'
+        run: |
+          echo "The static site was built, but this workflow token cannot enable GitHub Pages." >> "$GITHUB_STEP_SUMMARY"
+          echo "An administrator must enable Pages with GitHub Actions in repository settings; a later push will deploy it." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Deploy to GitHub Pages
+        if: steps.pages.outcome == 'success'
         id: deployment
         uses: actions/deploy-pages@v4
