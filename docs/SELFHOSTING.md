@@ -55,12 +55,14 @@ State lands in `./koko.db` and `./data/media/`. Delete them to reset.
 
 ## Path B — Docker on a VPS
 
-The image is `ghcr.io/koko-chat/koko` (built by the `docker` workflow on
-every push to `main` and every tag).
+The image is `ghcr.io/74mdi/salam:latest` (built by the `docker` workflow on
+every push to `main`; version tags are also published).
 
 ```bash
 mkdir -p /opt/koko && cd /opt/koko
 wget https://raw.githubusercontent.com/74mdi/salam/main/docker-compose.yml
+wget https://raw.githubusercontent.com/74mdi/salam/main/.env.example
+cp .env.example .env
 docker compose up -d
 
 curl http://127.0.0.1:8080/healthz
@@ -69,6 +71,33 @@ curl http://127.0.0.1:8080/healthz
 All state lives in `/opt/koko/data` (the SQLite file + media). Registration
 is **closed** by default in this path — see
 [creating the first account](#creating-the-first-account).
+
+### Cloady deployment
+
+Use the existing image `ghcr.io/74mdi/salam:latest` and expose the container's
+port `8080` through Cloady's HTTPS/reverse-proxy domain. Set these service
+environment variables in Cloady:
+
+```dotenv
+KOKO_BIND=0.0.0.0:8080
+KOKO_OPEN_REGISTRATION=true
+```
+
+`KOKO_OPEN_REGISTRATION` accepts only `true` or `false` (lowercase). Deploy
+with `true`, create your initial account through
+`https://your-domain.example/api/register`, then change the variable to
+`false` and redeploy. Login and authenticated endpoints continue working;
+only new registrations are disabled. Keep `KOKO_BIND=0.0.0.0:8080` so the
+container accepts traffic from Cloady's proxy. This does not enable
+registration by itself, and does not change `--localhost` loopback binding.
+
+The equivalent local Docker Compose setup uses the root `.env.example`:
+
+```sh
+cp .env.example .env
+# Set KOKO_OPEN_REGISTRATION=true in .env only during initial account setup.
+docker compose up -d
+```
 
 To deploy new versions automatically, use the `deploy` workflow
 ([docs/CI.md](CI.md#one-click-deploy)): it SSHes in, pulls the image, and
@@ -123,10 +152,20 @@ proxy_read_timeout 3600s;                    # long-lived sockets
 
 ## Creating the first account
 
-On a **public bind, registration is closed by default** (`--open-registration`
-off). Two safe ways to make the first account:
+On a **public bind, registration is closed by default**. For a container or
+reverse-proxy deployment, enable it independently of the bind address:
 
-1. SSH tunnel to localhost mode (recommended):
+```sh
+KOKO_OPEN_REGISTRATION=true
+```
+
+Restart/redeploy, create the initial account over HTTPS, then set the value
+back to `false` and restart/redeploy. Do not use `--localhost` for a public
+container: that option deliberately binds to `127.0.0.1` inside the container.
+
+For a server you can SSH into, there are also two alternatives:
+
+1. SSH tunnel to localhost mode:
 
    ```bash
    # on the server, temporarily:
@@ -140,7 +179,11 @@ off). Two safe ways to make the first account:
 2. Flip registration on briefly:
 
    ```bash
-   KOKO_OPEN_REGISTRATION=true systemd... # restart, register, flip back
+   sudo systemctl edit koko-server
+   # Add under [Service]: Environment=KOKO_OPEN_REGISTRATION=true
+   sudo systemctl daemon-reload
+   sudo systemctl restart koko-server
+   # Register, then change the override to false and restart again.
    ```
 
 After the first accounts exist, keep registration closed and invite people
@@ -148,19 +191,19 @@ by… running their own server, or opening it when you choose.
 
 ## Configuration reference
 
-Every flag has an environment variable twin — the Docker image is
-configured purely through env vars.
+Server options that need deployment-time configuration have environment
+variable equivalents, so the Docker image can be configured without CLI args.
 
 | Flag | Env var | Default | Meaning |
 |---|---|---|---|
-| `--localhost` | — | off | Bind 127.0.0.1 only + open registration |
+| `--localhost` | — | off | Bind 127.0.0.1 only; registration defaults to open unless explicitly set |
 | `--bind ADDR` | `KOKO_BIND` | `0.0.0.0:8080` | Socket address (port honored in localhost mode too) |
 | `--db PATH` | `KOKO_DB` | `koko.db` | SQLite file; created + migrated on boot |
 | `--media-dir PATH` | `KOKO_MEDIA_DIR` | `data/media` | Media store directory |
 | `--media-quota BYTES` | `KOKO_MEDIA_QUOTA` | `4294967296` | Per-user quota (4 GiB) |
 | `--max-file-size BYTES` | `KOKO_MAX_FILE_SIZE` | `26214400` | Per-file cap (25 MiB) |
 | `--max-connections N` | `KOKO_MAX_CONNECTIONS` | `512` | Concurrent WS sockets |
-| `--open-registration` | `KOKO_OPEN_REGISTRATION` | `false` | Allow account creation (implied by `--localhost`) |
+| `--open-registration[=<true|false>]` | `KOKO_OPEN_REGISTRATION` | `false` on public bind; `true` with `--localhost` | Enable or disable account creation independently of binding. Env accepts lowercase `true` or `false`; invalid values stop startup. Bare CLI flag enables registration. |
 | `--token-ttl-days N` | `KOKO_TOKEN_TTL_DAYS` | `30` | Session lifetime |
 | `--cors-origins ORIGINS` | `KOKO_CORS_ORIGINS` | GitHub Pages + localhost | Comma-separated browser origins allowed to call the HTTP API |
 

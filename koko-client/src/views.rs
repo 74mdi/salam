@@ -1400,10 +1400,7 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
             .style(glass::quiet_icon_button);
         let preview = message_preview(koko, m, label);
         let mut bubble_col =
-            column![
-                row![preview, more].align_y(iced::Alignment::Center),
-            ]
-            .spacing(3);
+            column![row![preview, more].align_y(iced::Alignment::Center),].spacing(3);
         if !m.delivered {
             bubble_col = bubble_col.push(text("sending…").size(10).style(muted_style));
         } else if mine && koko.show_timestamps {
@@ -1550,8 +1547,7 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
         heading,
         details,
         container(
-            scrollable(container(list).width(Length::Fill).max_width(800.0))
-                .width(Length::Fill),
+            scrollable(container(list).width(Length::Fill).max_width(800.0)).width(Length::Fill),
         )
         .width(Length::Fill)
         .height(Length::Fill)

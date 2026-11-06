@@ -67,7 +67,11 @@ cargo run -p koko-client      # server: http://127.0.0.1:8080, make an account, 
 ```
 
 Docker people: see [docs/SELFHOSTING.md](docs/SELFHOSTING.md) —
-`docker compose up -d` and you are running.
+`docker compose up -d` and you are running. For Cloady or another public
+Docker deployment, set `KOKO_OPEN_REGISTRATION=true` to create the first
+account, then set it to `false` and redeploy. The server stays bound to
+`0.0.0.0:8080`; registration is independent of network binding. See
+[.env.example](.env.example) and the [self-hosting guide](docs/SELFHOSTING.md).
 
 ## Workspace
 

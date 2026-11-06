@@ -12,9 +12,8 @@ COPY koko-db/Cargo.toml koko-db/
 COPY koko-server/Cargo.toml koko-server/
 COPY koko-ui/Cargo.toml koko-ui/
 COPY koko-client/Cargo.toml koko-client/
-COPY koko-web/Cargo.toml koko-web/
 # Dummy sources so dependency crates compile once and cache.
-RUN for d in koko-protocol koko-core koko-db koko-ui koko-web; do \
+RUN for d in koko-protocol koko-core koko-db koko-ui; do \
         echo "" > $d/src/lib.rs 2>/dev/null || mkdir -p $d/src && echo "" > $d/src/lib.rs; \
     done && \
     echo "fn main() {}" > koko-server/src/main.rs 2>/dev/null || \

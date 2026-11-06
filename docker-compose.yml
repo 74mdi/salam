@@ -7,7 +7,7 @@
 
 services:
   koko:
-    image: ghcr.io/koko-chat/koko:latest   # or: build: .
+    image: ghcr.io/74mdi/salam:latest      # or: build: .
     container_name: koko
     restart: unless-stopped
     ports:
@@ -19,9 +19,7 @@ services:
       KOKO_MEDIA_QUOTA: "4294967296"       # 4 GiB per user
       KOKO_MAX_FILE_SIZE: "26214400"       # 25 MiB per file
       KOKO_MAX_CONNECTIONS: "512"
-      # Registration is CLOSED by default on a public bind.
-      # Create the first account with `docker exec -it koko koko-server
-      # --help` … or flip this to "true" temporarily:
-      KOKO_OPEN_REGISTRATION: "false"
+      # Set KOKO_OPEN_REGISTRATION=true to create accounts; turn it off after setup.
+      KOKO_OPEN_REGISTRATION: "${KOKO_OPEN_REGISTRATION:-false}"
     volumes:
       - ./data:/data

@@ -8,7 +8,7 @@ use clap::Parser;
 #[derive(Parser, Debug, Clone)]
 #[command(name = "koko-server", version, about, long_about = None)]
 pub struct Cli {
-    /// Localhost mode: bind 127.0.0.1 only and open registration.
+    /// Localhost mode: bind 127.0.0.1 only; registration defaults to open.
     #[arg(long)]
     pub localhost: bool,
 
@@ -36,9 +36,16 @@ pub struct Cli {
     #[arg(long, default_value_t = 512, env = "KOKO_MAX_CONNECTIONS")]
     pub max_connections: usize,
 
-    /// Allow account registration (implied by --localhost).
-    #[arg(long, default_value_t = false, env = "KOKO_OPEN_REGISTRATION")]
-    pub open_registration: bool,
+    /// Allow account registration (defaults to --localhost mode).
+    #[arg(
+        long,
+        env = "KOKO_OPEN_REGISTRATION",
+        action = clap::ArgAction::Set,
+        num_args = 0..=1,
+        default_missing_value = "true",
+        value_parser = clap::value_parser!(bool)
+    )]
+    pub open_registration: Option<bool>,
 
     /// Session token lifetime in days (default 30).
     #[arg(long, default_value_t = 30, env = "KOKO_TOKEN_TTL_DAYS")]
@@ -103,7 +110,7 @@ impl Config {
             media_quota: cli.media_quota,
             max_file_size: cli.max_file_size,
             max_connections: cli.max_connections,
-            open_registration: localhost || cli.open_registration,
+            open_registration: cli.open_registration.unwrap_or(localhost),
             token_ttl_secs: cli.token_ttl_days * 86_400,
             cors_origins: cli
                 .cors_origins
@@ -209,5 +216,65 @@ mod tests {
         assert!(config
             .cors_origins
             .contains(&"http://127.0.0.1:3000".into()));
+    }
+
+    #[test]
+    fn public_server_registration_is_closed_by_default() {
+        let config = Config::from_cli(Cli::try_parse_from(["koko-server"]).unwrap());
+
+        assert_eq!(config.bind, "0.0.0.0:8080");
+        assert!(!config.localhost);
+        assert!(!config.open_registration);
+    }
+
+    #[test]
+    fn registration_can_be_enabled_without_changing_public_bind() {
+        let config = Config::from_cli(
+            Cli::try_parse_from([
+                "koko-server",
+                "--open-registration",
+                "--bind",
+                "0.0.0.0:9090",
+            ])
+            .unwrap(),
+        );
+
+        assert_eq!(config.bind, "0.0.0.0:9090");
+        assert!(!config.localhost);
+        assert!(config.open_registration);
+    }
+
+    #[test]
+    fn localhost_mode_stays_loopback_and_defaults_to_open_registration() {
+        let config = Config::from_cli(
+            Cli::try_parse_from(["koko-server", "--localhost", "--bind", "0.0.0.0:9090"])
+                .unwrap(),
+        );
+
+        assert_eq!(config.bind, "127.0.0.1:9090");
+        assert!(config.localhost);
+        assert!(config.open_registration);
+    }
+
+    #[test]
+    fn registration_setting_can_explicitly_close_localhost_mode() {
+        let config = Config::from_cli(
+            Cli::try_parse_from([
+                "koko-server",
+                "--localhost",
+                "--open-registration=false",
+            ])
+            .unwrap(),
+        );
+
+        assert_eq!(config.bind, "127.0.0.1:8080");
+        assert!(!config.open_registration);
+    }
+
+    #[test]
+    fn invalid_registration_setting_is_rejected() {
+        let result = Cli::try_parse_from(["koko-server", "--open-registration=sometimes"]);
+
+        assert!(result.is_err());
     }
 }

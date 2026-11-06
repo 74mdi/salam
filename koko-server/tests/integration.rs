@@ -399,6 +399,20 @@ async fn register_rate_limit() {
 #[tokio::test]
 async fn registration_can_be_closed() {
     let srv = start(|cfg| cfg.open_registration = false).await;
+    let pool = koko_db::connect(&srv._dir.path().join("koko.db"))
+        .await
+        .unwrap();
+    let password_hash = koko_core::password::hash_password("hunter2hunter2").unwrap();
+    koko_db::users::create_user(
+        &pool,
+        "alice",
+        "alice",
+        &password_hash,
+        koko_core::time::unix_now(),
+    )
+    .await
+    .unwrap();
+
     let resp = reqwest::Client::new()
         .post(format!("{}/api/register", srv.http()))
         .json(&json!({ "handle": "alice", "password": "hunter2hunter2" }))
@@ -406,6 +420,13 @@ async fn registration_can_be_closed() {
         .await
         .unwrap();
     assert_eq!(resp.status(), 403);
+
+    let token = login(&srv, "alice").await["token"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let resp = bearer(&srv, "GET", "/api/me", &token, None).await;
+    assert_eq!(resp.status(), 200);
 }
 
 #[tokio::test]
