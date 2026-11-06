@@ -247,8 +247,7 @@ mod tests {
     #[test]
     fn localhost_mode_stays_loopback_and_defaults_to_open_registration() {
         let config = Config::from_cli(
-            Cli::try_parse_from(["koko-server", "--localhost", "--bind", "0.0.0.0:9090"])
-                .unwrap(),
+            Cli::try_parse_from(["koko-server", "--localhost", "--bind", "0.0.0.0:9090"]).unwrap(),
         );
 
         assert_eq!(config.bind, "127.0.0.1:9090");
@@ -259,12 +258,8 @@ mod tests {
     #[test]
     fn registration_setting_can_explicitly_close_localhost_mode() {
         let config = Config::from_cli(
-            Cli::try_parse_from([
-                "koko-server",
-                "--localhost",
-                "--open-registration=false",
-            ])
-            .unwrap(),
+            Cli::try_parse_from(["koko-server", "--localhost", "--open-registration=false"])
+                .unwrap(),
         );
 
         assert_eq!(config.bind, "127.0.0.1:8080");

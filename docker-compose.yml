@@ -19,6 +19,7 @@ services:
       KOKO_MEDIA_QUOTA: "4294967296"       # 4 GiB per user
       KOKO_MAX_FILE_SIZE: "26214400"       # 25 MiB per file
       KOKO_MAX_CONNECTIONS: "512"
+      KOKO_CORS_ORIGINS: "${KOKO_CORS_ORIGINS:-https://74mdi.github.io,http://localhost:3000,http://127.0.0.1:3000}"
       # Set KOKO_OPEN_REGISTRATION=true to create accounts; turn it off after setup.
       KOKO_OPEN_REGISTRATION: "${KOKO_OPEN_REGISTRATION:-false}"
     volumes:

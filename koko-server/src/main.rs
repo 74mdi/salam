@@ -1,7 +1,8 @@
 //! `koko-server` — one binary, one SQLite file, zero external services.
 
 use actix_cors::Cors;
-use actix_web::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
+use actix_web::dev::Service;
+use actix_web::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, ORIGIN};
 use actix_web::{web, App, HttpServer};
 use clap::Parser;
 use std::io::Write;
@@ -10,6 +11,17 @@ use std::sync::Arc;
 use koko_server::config::{Cli, Config};
 use koko_server::hub::Hub;
 use koko_server::state::AppState;
+
+fn is_private_network_preflight(
+    method: &actix_web::http::Method,
+    requested_private_network: Option<&str>,
+    origin: Option<&str>,
+    allowed_origins: &[String],
+) -> bool {
+    method == actix_web::http::Method::OPTIONS
+        && requested_private_network == Some("true")
+        && origin.is_some_and(|origin| allowed_origins.iter().any(|allowed| allowed == origin))
+}
 
 fn print_banner(cfg: &Config) {
     let mut out = std::io::stdout().lock();
@@ -53,6 +65,7 @@ async fn main() -> std::io::Result<()> {
     println!(" ready → http://{bind}   ·   ws://{bind}/ws\n");
 
     HttpServer::new(move || {
+        let private_network_origins = cors_origins.clone();
         let cors = cors_origins
             .iter()
             .fold(Cors::default(), |cors, origin| cors.allowed_origin(origin));
@@ -62,6 +75,31 @@ async fn main() -> std::io::Result<()> {
                     .allowed_headers([ACCEPT, AUTHORIZATION, CONTENT_TYPE])
                     .max_age(3600),
             )
+            .wrap_fn(move |req, srv| {
+                let allow_private_network = is_private_network_preflight(
+                    req.method(),
+                    req.headers()
+                        .get("access-control-request-private-network")
+                        .and_then(|value| value.to_str().ok()),
+                    req.headers()
+                        .get(ORIGIN)
+                        .and_then(|value| value.to_str().ok()),
+                    &private_network_origins,
+                );
+                let future = srv.call(req);
+                async move {
+                    let mut response = future.await?;
+                    if allow_private_network {
+                        response.headers_mut().insert(
+                            actix_web::http::header::HeaderName::from_static(
+                                "access-control-allow-private-network",
+                            ),
+                            actix_web::http::header::HeaderValue::from_static("true"),
+                        );
+                    }
+                    Ok(response)
+                }
+            })
             .app_data(state.clone())
             .app_data(web::PayloadConfig::new(cfg.max_file_size as usize + 1024))
             .configure(koko_server::configure_routes)
@@ -69,4 +107,34 @@ async fn main() -> std::io::Result<()> {
     .bind(&bind)?
     .run()
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_private_network_preflight;
+    use actix_web::http::Method;
+
+    #[test]
+    fn private_network_preflight_requires_an_allowed_origin() {
+        let allowed_origins = vec!["https://74mdi.github.io".to_owned()];
+
+        assert!(is_private_network_preflight(
+            &Method::OPTIONS,
+            Some("true"),
+            Some("https://74mdi.github.io"),
+            &allowed_origins,
+        ));
+        assert!(!is_private_network_preflight(
+            &Method::OPTIONS,
+            Some("true"),
+            Some("https://attacker.example"),
+            &allowed_origins,
+        ));
+        assert!(!is_private_network_preflight(
+            &Method::OPTIONS,
+            None,
+            Some("https://74mdi.github.io"),
+            &allowed_origins,
+        ));
+    }
 }

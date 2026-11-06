@@ -231,9 +231,11 @@ uploads/min per user; 120 sends/min per socket.
   ```
 
   The default includes `https://74mdi.github.io` and local development
-  origins. Restart the server after changing the setting. Use HTTPS for both
-  the website and public server; browsers block insecure WebSocket/API
-  connections from an HTTPS page.
+  origins. Restart the server after changing the setting. A hosted HTTPS
+  website may also require browser permission to access a localhost server;
+  grant Local Network Access for the site, or run the web client locally at
+  `http://localhost:3000`. Use HTTPS for both the website and public server;
+  browsers block insecure WebSocket/API connections from an HTTPS page.
 
 ## Backups and restore
 

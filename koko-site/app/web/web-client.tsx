@@ -54,6 +54,18 @@ function normalizeServer(value: string) {
   return value.trim().replace(/\/+$/, "");
 }
 
+function connectionError(server: string) {
+  try {
+    const hostname = new URL(server).hostname.toLowerCase();
+    if (["localhost", "127.0.0.1", "::1", "[::1]"].includes(hostname)) {
+      return "Your browser could not access the local server. Allow this website Local Network Access in your browser’s site settings, or open the web client from http://localhost:3000. Check the server address and CORS settings too.";
+    }
+  } catch {
+    return "Could not reach the server. Check its address and CORS settings.";
+  }
+  return "Could not reach the server. Check its address, HTTPS connection, and CORS settings.";
+}
+
 function getErrorMessage(body: unknown, fallback: string) {
   if (body && typeof body === "object" && "error" in body) {
     const error = (body as { error?: { message?: unknown } }).error;
@@ -223,7 +235,7 @@ async function request<T>(
       },
     });
   } catch {
-    throw new Error("Could not reach the server. Check its address and CORS settings.");
+    throw new Error(connectionError(server));
   }
   const text = await response.text();
   let value: unknown = null;
