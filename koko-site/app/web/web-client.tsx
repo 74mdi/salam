@@ -179,7 +179,7 @@ function AvatarImage({
     let active = true;
     let objectUrl = "";
     fetch(`${normalizeServer(server)}/api/media/${encodeURIComponent(mediaId)}`, {
-      headers: { Authorization: `****** },
+      headers: { Authorization: "Bearer " + token },
     })
       .then(async (response) => {
         if (!response.ok) throw new Error("Avatar could not be loaded.");
