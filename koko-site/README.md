@@ -1,19 +1,18 @@
 # koko-site
 
-Static **landing page only** — Next.js with `output: "export"`, no server
-runtime, and **never part of the chat path**. (The chat web client is
-`koko-web`, a Leptos/WASM app; this directory exists to explain koko, not
-to run it.)
+Next.js landing page and browser chat client. `output: "export"` produces a
+static site with no server runtime; the `/web/` client connects directly to a
+Koko server over REST and the binary WebSocket protocol.
 
 ## Build
 
 ```bash
-npm install
+npm ci
 npm run build        # → ./out (pure static files)
 ```
 
-Deploy `out/` anywhere static: GitHub Pages, any CDN, or the same reverse
-proxy that fronts your koko-server.
+Set the Vercel project root directory to `koko-site`, or deploy `out/`
+anywhere static. The client never stores chat data on Vercel.
 
 ## GitHub Pages
 

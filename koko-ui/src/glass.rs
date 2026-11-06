@@ -120,7 +120,7 @@ pub fn content_card_mode(
     } else {
         Color::from_rgba(1.0, 1.0, 1.0, 0.09)
     };
-    surface(fill, 16.0, border, Shadow::default())
+    surface(fill, 12.0, border, Shadow::default())
 }
 
 /// The persistent navigation column: structured, but not a floating card.
@@ -236,6 +236,25 @@ pub fn icon_button(theme: &Theme, status: button::Status) -> button::Style {
     let mut style = ghost(theme, status);
     style.border.radius = 12.0.into();
     style
+}
+
+/// A quiet icon action that only gains a surface on hover or press.
+pub fn quiet_icon_button(_theme: &Theme, status: button::Status) -> button::Style {
+    let (alpha, border) = match status {
+        button::Status::Hovered => (0.09, tokens::GLASS_BORDER),
+        button::Status::Pressed => (0.14, tokens::GLASS_BORDER),
+        _ => (0.0, Color::TRANSPARENT),
+    };
+    button::Style {
+        background: Some(Background::Color(Color::from_rgba(1.0, 1.0, 1.0, alpha))),
+        text_color: tokens::TEXT_PRIMARY,
+        border: Border {
+            radius: 10.0.into(),
+            width: 1.0,
+            color: border,
+        },
+        shadow: Shadow::default(),
+    }
 }
 
 /// Low-noise row button used for settings switches and menus.

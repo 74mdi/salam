@@ -14,10 +14,7 @@
 node_modules/
 .next/
 out/
-
-# WASM (koko-web)
-koko-web/target/
-koko-web/dist/
+**/tsconfig.tsbuildinfo
 
 # Editors / OS
 .idea/

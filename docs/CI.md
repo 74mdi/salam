@@ -8,7 +8,7 @@ whole matrix runs; tag `v*` and you get a release.
 | Workflow | Trigger | What it does |
 |---|---|---|
 | `ci.yml` | push / PR | the full quality matrix (below) |
-| `release.yml` | tag `v*` | builds server binaries (linux/windows/macos), native client with wgpu, the wasm bundle, and publishes a GitHub Release with checksums |
+| `release.yml` | tag `v*` | builds server binaries (linux/windows/macos), native client with wgpu, and publishes a GitHub Release with checksums |
 | `docker.yml` | push to main, tags | builds and pushes `ghcr.io/<owner>/<repo>` (semver + sha tags) |
 | `deploy.yml` | manual (workflow_dispatch) | one-click deploy over SSH (see below) |
 
@@ -18,9 +18,8 @@ whole matrix runs; tag `v*` and you get a release.
 |---|---|
 | server-stack | `cargo fmt --check`, `clippy -D warnings`, all 34 tests (incl. 8 end-to-end integration tests with real WS clients) |
 | client | iced client builds + clippy-clean on Linux (tiny-skia renderer — no GPU needed in CI) |
-| wasm | koko-web compiles for `wasm32-unknown-unknown` and `trunk build` produces the bundle |
 | android-check | koko-client cross-compiles for `aarch64-linux-android` with the Android NDK |
-| site | koko-site static-exports with `next build` |
+| site | koko-site (landing page and browser client) static-exports with `next build` |
 | audit | `cargo audit --deny warnings` + `cargo deny` (license policy in `deny.toml`) |
 | smoke | boots the real server binary, registers a user, logs in, hits `/api/me` and `/healthz` over HTTP |
 
@@ -35,7 +34,6 @@ git push origin v0.0.1
 
 - `koko-server-{linux-amd64,windows-amd64,macos-arm64}` tarballs/zips
 - `koko-client-*` (with the `wgpu` renderer feature)
-- `koko-web.tar.gz` (static bundle)
 - `.sha256` checksums for everything, generated release notes
 
 The Docker image gets `v0.0.1`, `0.0`, and `sha-…` tags from the same

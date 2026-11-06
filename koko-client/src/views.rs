@@ -488,7 +488,7 @@ fn chat_list(koko: &Koko) -> Element<'_, Message> {
     let content = column![
         row![
             column![
-                text("Chats").size(type_size(koko, 22)),
+                text("Chats").size(type_size(koko, 24)),
                 text(format!("{} conversations", koko.chats.len()))
                     .size(11)
                     .style(muted_style),
@@ -704,7 +704,7 @@ fn settings(koko: &Koko) -> Element<'_, Message> {
         .spacing(6)
         .padding(16),
     )
-    .width(220)
+    .width(200)
     .height(Length::Shrink)
     .style(move |theme| {
         glass::panel_mode(
@@ -837,7 +837,7 @@ fn settings_profile(koko: &Koko) -> Element<'_, Message> {
         ),
     ]
     .spacing(14)
-    .max_width(620);
+    .max_width(800);
     settings_content(koko, body)
 }
 
@@ -893,7 +893,7 @@ fn settings_appearance(koko: &Koko) -> Element<'_, Message> {
         ),
     ]
     .spacing(14)
-    .max_width(620);
+    .max_width(800);
     settings_content(koko, body)
 }
 
@@ -930,7 +930,7 @@ fn settings_account(koko: &Koko) -> Element<'_, Message> {
         ),
     ]
     .spacing(14)
-    .max_width(620);
+    .max_width(800);
     settings_content(koko, body)
 }
 
@@ -1032,7 +1032,7 @@ fn settings_ai(koko: &Koko) -> Element<'_, Message> {
         ),
     ]
     .spacing(14)
-    .max_width(700);
+    .max_width(800);
     settings_content(koko, body)
 }
 
@@ -1136,23 +1136,27 @@ fn settings_content<'a>(
                 .style(glass::card),
         );
     }
-    container(scrollable(container(content).width(
-        if koko.compact_layout {
-            Length::Fill
-        } else {
-            Length::Fixed(660.0)
-        },
-    )))
-    .padding(Padding {
-        top: if koko.compact_layout { 12.0 } else { 28.0 },
-        right: if koko.compact_layout { 8.0 } else { 28.0 },
-        bottom: 12.0,
-        left: if koko.compact_layout { 8.0 } else { 28.0 },
-    })
-    .width(Length::Fill)
-    .height(Length::Fill)
-    .center_x(Length::Fill)
-    .into()
+    let content = container(content).width(Length::Fill);
+    let content = if koko.compact_layout {
+        content
+    } else {
+        content.max_width(840.0)
+    };
+    container(scrollable(content).width(Length::Fill))
+        .padding(Padding {
+            top: if koko.compact_layout {
+                12.0
+            } else {
+                22.0 + (1.0 - koko.settings_transition_progress) * 8.0
+            },
+            right: if koko.compact_layout { 8.0 } else { 28.0 },
+            bottom: 12.0,
+            left: if koko.compact_layout { 8.0 } else { 28.0 },
+        })
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x(Length::Fill)
+        .into()
 }
 
 fn switch_row(
@@ -1249,8 +1253,8 @@ fn settings_section<'a>(
     koko: &'a Koko,
     content: impl Into<Element<'a, Message>>,
 ) -> Element<'a, Message> {
-    container(column![text(title).size(15), content.into()].spacing(10))
-        .padding(20)
+    container(column![text(title).size(14), content.into()].spacing(10))
+        .padding(18)
         .width(Length::Fill)
         .style(move |theme| {
             glass::content_card_mode(
@@ -1392,12 +1396,12 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
         let label = message_summary(m.kind, &m.body, &body);
         let more = button(iconoir_icon(Icon::More, 16))
             .on_press(Message::MenuPressed(m.clone()))
-            .style(glass::ghost);
+            .padding(6)
+            .style(glass::quiet_icon_button);
         let preview = message_preview(koko, m, label);
         let mut bubble_col =
             column![
-                row![preview, iced::widget::Space::with_width(Length::Fill), more,]
-                    .align_y(iced::Alignment::Center),
+                row![preview, more].align_y(iced::Alignment::Center),
             ]
             .spacing(3);
         if !m.delivered {
@@ -1416,7 +1420,7 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
                 left: 14.0,
                 right: 14.0,
             })
-            .max_width(460)
+            .max_width(420)
             .style(move |t| glass::bubble(mine, t));
         let bubble: Element<'_, Message> = bubble_body.into();
         let line: Element<'_, Message> = if mine {
@@ -1499,7 +1503,7 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
                 .style(glass::ghost),
             avatar_view(koko, 32),
             column![
-                text(header).size(type_size(koko, 20)),
+                text(header).size(type_size(koko, 22)),
                 row![
                     status_dot(koko.connected),
                     text(if koko.connected {
@@ -1522,7 +1526,7 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
         row![
             avatar_view(koko, 32),
             column![
-                text(header).size(type_size(koko, 20)),
+                text(header).size(type_size(koko, 22)),
                 row![
                     status_dot(koko.connected),
                     text(if koko.connected {
@@ -1545,7 +1549,14 @@ fn conversation<'a>(koko: &'a Koko, active: &'a ActiveChat) -> Element<'a, Messa
     let conversation = column![
         heading,
         details,
-        container(scrollable(list)).height(Length::Fill).clip(true),
+        container(
+            scrollable(container(list).width(Length::Fill).max_width(800.0))
+                .width(Length::Fill),
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x(Length::Fill)
+        .clip(true),
         iced::widget::Space::with_height(4),
         composer,
     ]

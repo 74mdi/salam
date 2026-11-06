@@ -47,8 +47,8 @@ identical to server mode.
 Then start a client:
 
 ```bash
-cargo run -p koko-client                # native (iced)
-(cd koko-web && trunk serve)            # browser (Leptos/WASM)
+cargo run -p koko-client                     # native (iced)
+(cd koko-site && npm ci && npm run dev)      # browser (Next.js at localhost:3000)
 ```
 
 State lands in `./koko.db` and `./data/media/`. Delete them to reset.
@@ -162,6 +162,7 @@ configured purely through env vars.
 | `--max-connections N` | `KOKO_MAX_CONNECTIONS` | `512` | Concurrent WS sockets |
 | `--open-registration` | `KOKO_OPEN_REGISTRATION` | `false` | Allow account creation (implied by `--localhost`) |
 | `--token-ttl-days N` | `KOKO_TOKEN_TTL_DAYS` | `30` | Session lifetime |
+| `--cors-origins ORIGINS` | `KOKO_CORS_ORIGINS` | GitHub Pages + localhost | Comma-separated browser origins allowed to call the HTTP API |
 
 Fixed policies (source: `koko-server/src/limits.rs`): 5 registrations per
 hour per IP; 10 logins/min per IP and 5/min per handle; 60 media
@@ -173,9 +174,23 @@ uploads/min per user; 120 sends/min per socket.
   (`https://koko.example.com`), register/sign in. The client keeps a local
   SQLite mirror (`koko-mirror.db`, override with `KOKO_MIRROR`) and syncs
   by cursor — it works offline and catches up on reconnect.
-- **Web:** serve the `koko-web` static bundle (release artifact
-  `koko-web.tar.gz`, or `trunk build --release`) from any static host or
-  the same reverse proxy, then enter the server URL.
+- **Web:** import this repository into Vercel and set the project root
+  directory to `koko-site` (the detected framework is Next.js), or use the
+  GitHub Pages workflow. The app is a static Next.js export and
+  connects from the browser directly to your Koko server; it does not host
+  the chat API or database. Open `/web/`, enter your server URL, and sign in.
+- **Browser CORS:** allow the exact website origin on the Koko server. For
+  Vercel, set `KOKO_CORS_ORIGINS` to a comma-separated list that includes
+  your Vercel production domain and any preview domain you use, for example:
+
+  ```sh
+  KOKO_CORS_ORIGINS=https://your-project.vercel.app,https://chat.example.com
+  ```
+
+  The default includes `https://74mdi.github.io` and local development
+  origins. Restart the server after changing the setting. Use HTTPS for both
+  the website and public server; browsers block insecure WebSocket/API
+  connections from an HTTPS page.
 
 ## Backups and restore
 

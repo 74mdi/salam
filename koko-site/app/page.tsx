@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const CHATS = [
   { initials: "mi", name: "mira", preview: "sent you the deploy notes", time: "9:41", active: true },
   { initials: "sh", name: "self-hosting crew", preview: "kai: db migration done", time: "9:12" },
@@ -85,6 +87,7 @@ export default function Home() {
       <nav className="nav shell" aria-label="Main navigation">
         <Logo />
         <div className="nav-links">
+          <Link href="/web">Web client</Link>
           <a href="https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md">Docs</a>
           <a href="https://github.com/74mdi/salam">Source</a>
           <a className="nav-download" href="https://github.com/74mdi/salam/releases/latest">
@@ -98,11 +101,14 @@ export default function Home() {
           <p className="eyebrow"><span /> PRIVATE CHAT, BUILT WITH RUST</p>
           <h1>Your conversations.<br /><span>Your machine.</span></h1>
           <p className="hero-description">
-            A native Linux chat client for people who want a little more ownership.
-            Run your own server. Keep your data close.
+            A native Linux client and a browser companion for people who want
+            a little more ownership. Run your own server. Keep your data close.
           </p>
           <div className="hero-actions">
-            <a className="button button-primary" href="https://github.com/74mdi/salam/releases/latest">
+            <Link className="button button-primary" href="/web">
+              Open Koko Web <span aria-hidden="true">→</span>
+            </Link>
+            <a className="button button-quiet" href="https://github.com/74mdi/salam/releases/latest">
               Get the Linux client <span aria-hidden="true">↗</span>
             </a>
             <a className="button button-quiet" href="https://github.com/74mdi/salam/blob/main/docs/SELFHOSTING.md">

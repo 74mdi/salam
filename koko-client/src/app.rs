@@ -218,6 +218,8 @@ pub struct Koko {
     pub list_panel_open: bool,
     /// Animated chat-list width progress, from 0.0 to 1.0.
     pub list_panel_progress: f32,
+    /// Progress of the small settings content settle animation.
+    pub settings_transition_progress: f32,
     /// Current settings section.
     pub settings_section: SettingsSection,
     /// Stable id used by Ctrl+F to focus the chat search field.
@@ -380,6 +382,7 @@ impl Default for Koko {
             profile_menu_open: false,
             list_panel_open: true,
             list_panel_progress: 1.0,
+            settings_transition_progress: 1.0,
             settings_section: SettingsSection::Profile,
             search_id: text_input::Id::new("koko-chat-search"),
             token: None,
@@ -429,10 +432,12 @@ impl Koko {
     /// iced subscription: the WS connector lives while we hold a token.
     pub fn subscription(&self) -> Subscription<Message> {
         let shortcuts = iced::event::listen_with(keyboard_shortcut);
-        let animation = if (self.list_panel_progress - if self.list_panel_open { 1.0 } else { 0.0 })
-            .abs()
-            > f32::EPSILON
-        {
+        let list_is_animating =
+            (self.list_panel_progress - if self.list_panel_open { 1.0 } else { 0.0 }).abs()
+                > f32::EPSILON;
+        let settings_are_animating =
+            self.screen == Screen::Settings && self.settings_transition_progress < 1.0;
+        let animation = if list_is_animating || settings_are_animating {
             iced::time::every(Duration::from_millis(16)).map(|_| Message::SidebarTick)
         } else {
             Subscription::none()
@@ -612,11 +617,15 @@ impl Koko {
                     .as_ref()
                     .map_or_else(String::new, |me| me.user.display_name.clone());
                 self.screen = Screen::Settings;
+                self.settings_transition_progress = 0.0;
                 self.profile_menu_open = false;
                 Task::none()
             }
             Message::SettingsSectionSelected(section) => {
-                self.settings_section = section;
+                if self.settings_section != section {
+                    self.settings_section = section;
+                    self.settings_transition_progress = 0.0;
+                }
                 Task::none()
             }
             Message::BackToChatsPressed | Message::ChatsPressed => {
@@ -640,6 +649,14 @@ impl Koko {
                     self.list_panel_progress = target;
                 } else {
                     self.list_panel_progress += delta * 0.12;
+                }
+                if self.screen == Screen::Settings {
+                    let transition_delta = 1.0 - self.settings_transition_progress;
+                    if transition_delta < 0.02 {
+                        self.settings_transition_progress = 1.0;
+                    } else {
+                        self.settings_transition_progress += transition_delta * 0.24;
+                    }
                 }
                 Task::none()
             }

@@ -1,5 +1,7 @@
 //! `koko-server` — one binary, one SQLite file, zero external services.
 
+use actix_cors::Cors;
+use actix_web::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 use actix_web::{web, App, HttpServer};
 use clap::Parser;
 use std::io::Write;
@@ -46,11 +48,20 @@ async fn main() -> std::io::Result<()> {
     let state = web::Data::new(AppState::new(pool, Hub::new(), cfg.clone()));
 
     let bind = cfg.bind.clone();
+    let cors_origins = cfg.cors_origins.clone();
     log::info!("listening on http://{bind}");
     println!(" ready → http://{bind}   ·   ws://{bind}/ws\n");
 
     HttpServer::new(move || {
+        let cors = cors_origins
+            .iter()
+            .fold(Cors::default(), |cors, origin| cors.allowed_origin(origin));
         App::new()
+            .wrap(
+                cors.allowed_methods(["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+                    .allowed_headers([ACCEPT, AUTHORIZATION, CONTENT_TYPE])
+                    .max_age(3600),
+            )
             .app_data(state.clone())
             .app_data(web::PayloadConfig::new(cfg.max_file_size as usize + 1024))
             .configure(koko_server::configure_routes)

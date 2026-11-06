@@ -1,8 +1,0 @@
-[build]
-target = "index.html"
-dist = "dist"
-
-[[hooks]]
-stage = "build"
-command = "sh"
-command_arguments = ["-c", "echo 'koko-web: trunk build (leptos → wasm)'"]

@@ -5,15 +5,15 @@
 [![docker](https://github.com/74mdi/salam/actions/workflows/docker.yml/badge.svg)](https://github.com/74mdi/salam/actions/workflows/docker.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-7C6CF0.svg)](LICENSE)
 
-A self-hosted chat app that is **100% native Rust** — no Electron, no app
-webviews, no slop. One server binary, one SQLite file, zero external
-services. Liquid-glass UI on a dark theme.
+The server and desktop client are native Rust — no Electron, no app
+webviews. One server binary, one SQLite file, zero external services, plus
+a browser client deployable to Vercel. Liquid-glass UI on a dark theme.
 
 **This drop (v0.0.1)** is the working vertical slice: the full wire
 protocol, a deployable server with auth + sync + groups + media, a native
-iced client, a Leptos/WASM web client, CI/CD for GitHub Actions, and the
-self-hosting runbook. See the honest [status matrix](#status) for what is
-done and what is next.
+iced client, a Next.js browser client deployable to Vercel or GitHub Pages,
+and the self-hosting runbook. See the honest [status matrix](#status) for
+what is done and what is next.
 
 <p align="center">
   <img src="docs/screenshots/03-conversation.png" alt="koko conversation" width="820">
@@ -27,9 +27,6 @@ done and what is next.
 | Login — glass card over the aurora wallpaper | Chat list — frosted sidebar, unread badges |
 | ![landing](docs/screenshots/04-landing.png) | ![terminal](docs/screenshots/05-server-terminal.png) |
 | koko-site landing page (static Next.js) | The real server: register, login, healthz |
-| ![architecture](docs/screenshots/06-architecture.png) | |
-| The whole system on one page | |
-
 ## Status
 
 | Area | State | Notes |
@@ -38,9 +35,9 @@ done and what is next.
 | Server (`koko-server`) | **done, tested** | register/login, WS messaging, per-user seq sync, groups, media + LRU quota, rate limits, `--localhost` mode |
 | Persistence (`koko-db`) | **done, tested** | SQLite WAL, embedded migrations, single-file fanout transaction |
 | Native client (`koko-client`) | **works** | login, chat list, conversation, offline mirror, reconnecting WS, width-adaptive mobile layout; Android cross-compile check (APK/AAB packaging remains TODO) |
-| Web client (`koko-web`) | **works** | Leptos → WASM, same protocol crate, glass CSS; `trunk build` |
-| Landing page (`koko-site`) | **done** | Next.js static export |
-| CI/CD (GitHub Actions) | **done** | fmt/clippy/tests, client, wasm, android check, site, audit, smoke, releases, Docker, deploy |
+| Web client (`koko-site/app/web`) | **initial parity** | Next.js client with REST and the shared KOK1 WebSocket protocol; Vercel / GitHub Pages |
+| Site (`koko-site`) | **done** | Next.js static export with landing page and browser client |
+| CI/CD (GitHub Actions) | **done** | fmt/clippy/tests, client, Android check, Next.js site, audit, smoke, releases, Docker, deploy |
 | E2E encryption | **wire-ready, crypto TODO** | bodies are opaque bytes end-to-end; the demo sends clear text — see [docs/SECURITY.md](docs/SECURITY.md) |
 | Calls, voice notes | roadmap | Opus/WebRTC-signaling shapes reserved in the protocol |
 | 1 vCPU load test | **partial** | server boots at ~10.7 MB RSS (target < 40 MB); full 512-socket soak test is tracked |
@@ -76,14 +73,13 @@ Docker people: see [docs/SELFHOSTING.md](docs/SELFHOSTING.md) —
 
 | Crate | Role |
 |---|---|
-| `koko-protocol` | The wire contract: IDs, envelopes, WS frames, binary codec. Linked by server + both clients — one implementation, zero drift |
+| `koko-protocol` | The wire contract: IDs, envelopes, WS frames, binary codec; the browser client mirrors its KOK1 format |
 | `koko-core` | Domain core: handles, Argon2id, tokens, the E2E `Cipher` seam |
 | `koko-db` | SQLite persistence: migrations, repos, the fanout transaction |
 | `koko-server` | The binary you deploy: HTTP API + WS + hub + rate limits + media |
 | `koko-ui` | Glass design system (tokens + surfaces) for iced |
 | `koko-client` | Native client (iced; tiny-skia everywhere, `wgpu` feature for GPU) |
-| `koko-web` | Browser client: Leptos → WASM, reuses `koko-protocol` |
-| `koko-site` | Static Next.js landing page — never part of the chat path |
+| `koko-site` | Next.js landing page and browser client; static export connects directly to the user's Koko server |
 
 Default `cargo build`/`cargo test` covers the server stack (fast, no GUI
 toolchain). Build everything with `cargo build --workspace`.

@@ -2,7 +2,7 @@
   "name": "koko-site",
   "version": "0.1.0",
   "private": true,
-  "description": "koko.chat landing page — pure static export, never part of the chat path",
+  "description": "koko.chat landing page and browser client - static Next.js export",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

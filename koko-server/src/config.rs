@@ -43,6 +43,14 @@ pub struct Cli {
     /// Session token lifetime in days (default 30).
     #[arg(long, default_value_t = 30, env = "KOKO_TOKEN_TTL_DAYS")]
     pub token_ttl_days: i64,
+
+    /// Comma-separated browser origins allowed to call the HTTP API.
+    #[arg(
+        long,
+        default_value = "https://74mdi.github.io,http://localhost:3000,http://127.0.0.1:3000",
+        env = "KOKO_CORS_ORIGINS"
+    )]
+    pub cors_origins: String,
 }
 
 /// Fully-resolved runtime configuration.
@@ -66,6 +74,8 @@ pub struct Config {
     pub open_registration: bool,
     /// Session lifetime (seconds).
     pub token_ttl_secs: i64,
+    /// Allowed browser origins for the static web client.
+    pub cors_origins: Vec<String>,
 }
 
 impl Config {
@@ -95,6 +105,13 @@ impl Config {
             max_connections: cli.max_connections,
             open_registration: localhost || cli.open_registration,
             token_ttl_secs: cli.token_ttl_days * 86_400,
+            cors_origins: cli
+                .cors_origins
+                .split(',')
+                .map(str::trim)
+                .filter(|origin| !origin.is_empty())
+                .map(str::to_owned)
+                .collect(),
         }
     }
 
@@ -110,13 +127,14 @@ impl Config {
             max_connections: 512,
             open_registration: true,
             token_ttl_secs: 86_400,
+            cors_origins: vec!["https://74mdi.github.io".into()],
         }
     }
 
     /// Human-readable summary for the startup banner.
     pub fn summary(&self) -> String {
         format!(
-            " mode          {}\n bind          {}\n database      {}\n media         {} (quota {}, max file {})\n connections   {} max\n registration  {}",
+            " mode          {}\n bind          {}\n database      {}\n media         {} (quota {}, max file {})\n connections   {} max\n registration  {}\n browser CORS  {}",
             if self.localhost { "localhost (loopback only)" } else { "server" },
             self.bind,
             self.db_path.display(),
@@ -125,6 +143,11 @@ impl Config {
             humansize(self.max_file_size),
             self.max_connections,
             if self.open_registration { "open" } else { "closed" },
+            if self.cors_origins.is_empty() {
+                "disabled".to_owned()
+            } else {
+                self.cors_origins.join(", ")
+            },
         )
     }
 }
@@ -147,5 +170,44 @@ fn humansize(bytes: i64) -> String {
         format!("{bytes} B")
     } else {
         format!("{val:.1} {unit}")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Cli, Config};
+    use clap::Parser;
+
+    #[test]
+    fn cors_origins_are_trimmed_and_kept_as_exact_origins() {
+        let cli = Cli::try_parse_from([
+            "koko-server",
+            "--cors-origins",
+            "https://chat.example.com, https://preview.example.com",
+        ])
+        .expect("valid server arguments");
+
+        assert_eq!(
+            Config::from_cli(cli).cors_origins,
+            vec![
+                "https://chat.example.com".to_owned(),
+                "https://preview.example.com".to_owned(),
+            ]
+        );
+    }
+
+    #[test]
+    fn browser_default_allows_the_site_and_next_dev_server() {
+        let config = Config::from_cli(Cli::try_parse_from(["koko-server"]).unwrap());
+
+        assert!(config
+            .cors_origins
+            .contains(&"https://74mdi.github.io".into()));
+        assert!(config
+            .cors_origins
+            .contains(&"http://localhost:3000".into()));
+        assert!(config
+            .cors_origins
+            .contains(&"http://127.0.0.1:3000".into()));
     }
 }

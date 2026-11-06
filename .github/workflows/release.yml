@@ -199,34 +199,6 @@ jobs:
             koko-client-macos-arm64.tar.gz
             koko-client-macos-arm64.tar.gz.sha256
 
-  # ---- web client bundle --------------------------------------------------
-  web:
-    name: koko-web (trunk release bundle)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-      - uses: Swatinem/rust-cache@v2
-      - name: Install trunk
-        run: |
-          curl -sSL https://github.com/trunk-rs/trunk/releases/download/v0.21.7/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xz
-          sudo mv trunk /usr/local/bin/
-      - name: Build
-        working-directory: koko-web
-        run: trunk build --release
-      - name: Package
-        run: |
-          tar -czf koko-web.tar.gz -C koko-web/dist .
-          sha256sum koko-web.tar.gz > koko-web.tar.gz.sha256
-      - uses: actions/upload-artifact@v4
-        with:
-          name: koko-web
-          path: |
-            koko-web.tar.gz
-            koko-web.tar.gz.sha256
-
   # ---- publish the GitHub Release ----------------------------------------
   publish:
     name: publish GitHub release
@@ -238,7 +210,6 @@ jobs:
       - client-linux
       - client-windows
       - client-macos
-      - web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4

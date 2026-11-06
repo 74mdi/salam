@@ -1,11 +1,9 @@
 # Architecture
 
-koko is a workspace of seven crates that compile to three deployables
-(server, native client, web client) plus a static site. The rule that keeps
-it honest: **one protocol crate, linked everywhere** — clients and server
-physically cannot drift apart on the wire.
-
-![architecture](screenshots/06-architecture.png)
+koko is a workspace of six Rust crates for the server and native client,
+plus a Next.js browser client and static landing page. Both clients use the
+same binary protocol; the browser client encodes and decodes the `KOK1` wire
+format in TypeScript.
 
 ## Crates
 
@@ -17,8 +15,7 @@ physically cannot drift apart on the wire.
 | `koko-server` | all of the above + actix-web | The deployable binary |
 | `koko-ui` | iced | Design tokens + glass surfaces (theme functions) |
 | `koko-client` | protocol/core/ui + iced, rusqlite, tokio-tungstenite | Native app with a local mirror |
-| `koko-web` | protocol/core + leptos, web-sys | WASM app |
-| `koko-site` | next | Static landing page — never in the chat path |
+| `koko-site` | Next.js | Static landing page and browser chat client |
 
 Unsafe policy: `#![forbid(unsafe_code)]` workspace-wide (root
 `Cargo.toml`). The one carved-out future exception — `libsignal` FFI in
@@ -117,8 +114,10 @@ liquid-glass language with layered translucency, specular borders and deep
 shadows on every backend; the true backdrop-blur shader pass (iced_glass
 style) is the planned upgrade behind the same tokens.
 
-**Web (`koko-web`)** — same protocol crate compiled to WASM, Leptos CSR,
-glass via CSS `backdrop-filter` (browsers do real blur natively).
+**Web (`koko-site/app/web`)** — static Next.js client, deployed to Vercel or
+GitHub Pages. It connects directly to the user's server over REST and binary
+WebSocket frames (`KOK1`); the web frontend does not host chat data or tokens
+on the deployment platform.
 
 ## E2E readiness (honest)
 
