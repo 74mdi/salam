@@ -26,8 +26,8 @@ whole matrix runs; tag `v*` and you get a release.
 ## Making a release
 
 ```bash
-git tag v0.0.1
-git push origin v0.0.1
+git tag v1.0.2
+git push origin v1.0.2
 ```
 
 `release.yml` builds and attaches:
@@ -36,7 +36,7 @@ git push origin v0.0.1
 - `koko-client-*` (with the `wgpu` renderer feature)
 - `.sha256` checksums for everything, generated release notes
 
-The Docker image gets `v0.0.1`, `0.0`, and `sha-…` tags from the same
+The Docker image gets `v1.0.2`, `1.0`, and `sha-…` tags from the same
 push (`docker.yml`).
 
 ## One-click deploy

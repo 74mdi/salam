@@ -262,7 +262,7 @@ manual migration step. Roll back by restoring the backup.
 `GET /healthz` is public and cheap:
 
 ```json
-{"ok":true,"version":"0.0.1","uptime_secs":2,"connections":0,
+{"ok":true,"version":"1.0.2","uptime_secs":2,"connections":0,
  "max_connections":512,"users":2,"messages":0,"media_bytes":0,"rss_kib":10920}
 ```
 

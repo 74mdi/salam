@@ -2991,7 +2991,7 @@ checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 
 [[package]]
 name = "koko-client"
-version = "0.0.1"
+version = "1.0.2"
 dependencies = [
  "bincode",
  "env_logger",
@@ -3014,7 +3014,7 @@ dependencies = [
 
 [[package]]
 name = "koko-core"
-version = "0.0.1"
+version = "1.0.2"
 dependencies = [
  "argon2",
  "base64 0.22.1",
@@ -3028,7 +3028,7 @@ dependencies = [
 
 [[package]]
 name = "koko-db"
-version = "0.0.1"
+version = "1.0.2"
 dependencies = [
  "koko-core",
  "koko-protocol",
@@ -3041,7 +3041,7 @@ dependencies = [
 
 [[package]]
 name = "koko-protocol"
-version = "0.0.1"
+version = "1.0.2"
 dependencies = [
  "bincode",
  "serde",
@@ -3050,7 +3050,7 @@ dependencies = [
 
 [[package]]
 name = "koko-server"
-version = "0.0.1"
+version = "1.0.2"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -3081,7 +3081,7 @@ dependencies = [
 
 [[package]]
 name = "koko-ui"
-version = "0.0.1"
+version = "1.0.2"
 dependencies = [
  "iced",
 ]

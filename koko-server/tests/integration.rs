@@ -15,7 +15,7 @@ use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 
 struct TestServer {
     srv: actix_test::TestServer,
-    _dir: tempfile::TempDir,
+    dir: tempfile::TempDir,
 }
 
 async fn start(mutate: impl FnOnce(&mut Config)) -> TestServer {
@@ -30,7 +30,7 @@ async fn start(mutate: impl FnOnce(&mut Config)) -> TestServer {
             .app_data(web::PayloadConfig::new(30 * 1024 * 1024))
             .configure(koko_server::configure_routes)
     });
-    TestServer { srv, _dir: dir }
+    TestServer { srv, dir }
 }
 
 impl TestServer {
@@ -399,7 +399,7 @@ async fn register_rate_limit() {
 #[tokio::test]
 async fn registration_can_be_closed() {
     let srv = start(|cfg| cfg.open_registration = false).await;
-    let pool = koko_db::connect(&srv._dir.path().join("koko.db"))
+    let pool = koko_db::connect(&srv.dir.path().join("koko.db"))
         .await
         .unwrap();
     let password_hash = koko_core::password::hash_password("hunter2hunter2").unwrap();

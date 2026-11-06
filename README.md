@@ -9,7 +9,7 @@ The server and desktop client are native Rust — no Electron, no app
 webviews. One server binary, one SQLite file, zero external services, plus
 a browser client deployable to Vercel. Liquid-glass UI on a dark theme.
 
-**This drop (v0.0.1)** is the working vertical slice: the full wire
+**Release v1.0.2** is the working vertical slice: the full wire
 protocol, a deployable server with auth + sync + groups + media, a native
 iced client, a Next.js browser client deployable to Vercel or GitHub Pages,
 and the self-hosting runbook. See the honest [status matrix](#status) for
