@@ -10,8 +10,6 @@ ignore = [
     { id = "RUSTSEC-2024-0384", reason = "Maintenance-only advisory in a transitive desktop GUI dependency; cargo audit continues to deny active vulnerabilities." },
     { id = "RUSTSEC-2024-0436", reason = "Maintenance-only advisory in a transitive desktop GUI dependency; cargo audit continues to deny active vulnerabilities." },
     { id = "RUSTSEC-2026-0441", reason = "Maintenance-only advisory in a transitive desktop GUI dependency; cargo audit continues to deny active vulnerabilities." },
-    { id = "RUSTSEC-2024-0370", reason = "Maintenance-only advisory in transitive GUI procedural macros; cargo audit continues to deny active vulnerabilities." },
-    { id = "RUSTSEC-2026-0173", reason = "Maintenance-only advisory in transitive GUI procedural macros; cargo audit continues to deny active vulnerabilities." },
     { id = "RUSTSEC-2026-0206", reason = "Maintenance-only advisory in the transitive iced text-rendering stack; replacing it requires upstream rendering changes." },
     { id = "RUSTSEC-2026-0192", reason = "Maintenance-only advisory in the transitive iced font stack; replacing it requires upstream rendering changes." },
     { id = "RUSTSEC-2026-0371", reason = "Maintenance-only advisory in zbus 5 used by the desktop file-picker portal; migration requires upstream portal support." },
